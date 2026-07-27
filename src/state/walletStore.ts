@@ -115,7 +115,11 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       ),
     })),
 
-  completeOnboarding: () => set({ onboarded: true }),
+  completeOnboarding: () =>
+    set((state) => ({
+      onboarded: true,
+      limits: { ...state.limits, dailyUsed: 0, lastReset: new Date() },
+    })),
 
   setLimits: (partial) =>
     set((state) => ({

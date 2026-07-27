@@ -23,10 +23,10 @@ const Tab = createBottomTabNavigator();
 
 const TAB_ICONS: Record<string, string> = {
   Home: '⬡',
-  Assets: '◇',
-  Swap: '↕',
+  Assets: '◧',
+  Swap: '⇌',
   Browser: '◎',
-  Settings: '⚙',
+  Settings: '≡',
 };
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
@@ -35,9 +35,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
       <Text style={[tabStyles.icon, focused && { color: colors.accent }]}>
         {TAB_ICONS[name] || '○'}
       </Text>
-      <Text style={[tabStyles.label, focused && { color: colors.textPrimary }]}>
-        {name}
-      </Text>
+      {focused && <View style={tabStyles.indicator} />}
     </View>
   );
 }
@@ -50,6 +48,7 @@ function HomeTabs() {
         tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
         tabBarStyle: tabStyles.bar,
         tabBarShowLabel: false,
+        tabBarAllowFontScaling: false,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -66,13 +65,18 @@ const tabStyles = StyleSheet.create({
     backgroundColor: colors.bg,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
-    height: 68,
+    height: 60,
     paddingTop: 8,
-    paddingBottom: 10,
+    paddingBottom: 8,
   },
-  wrap: { alignItems: 'center', gap: 3 },
-  icon: { fontSize: 18, color: colors.textMuted },
-  label: { fontFamily: 'Inter_500Medium', fontSize: 10, color: colors.textMuted },
+  wrap: { alignItems: 'center', gap: 4 },
+  icon: { fontSize: 20, color: colors.textMuted },
+  indicator: {
+    width: 16,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: colors.accent,
+  },
 });
 
 export default function RootNavigator() {
