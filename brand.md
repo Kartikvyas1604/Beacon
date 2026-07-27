@@ -2,42 +2,40 @@
 
 _Status: active_
 
-## Design System: "Field Console"
+## Design System
 
-An operator's console during a blackout: dim ambient light, one warm signal color cutting through the dark, everything readable at a glance under stress.
+Clean, modern wallet interface. High contrast on dark surfaces. Inter for everything human-readable, JetBrains Mono for machine-readable.
 
 ## Palette
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| bg | #0B0E12 | Base background, near-black ink, slightly blue |
-| bgElevated | #12161C | Elevated surfaces |
-| bgPanel | #171C24 | Panel backgrounds |
-| hairline | #242A34 | Borders, dividers |
-| signal | #FF9B3D | Primary accent — warm amber, used sparingly |
-| signalDim | #7A4B22 | Muted signal |
-| signalGlow | rgba(255,155,61,0.14) | Signal ambient glow |
-| online | #5FBF8A | Full connectivity status |
-| mesh | #E8C24A | Mesh relay status |
-| frozen | #D9534F | Emergency freeze status |
-| savings | #6E8FB8 | Auto-save balance |
-| textPrimary | #EDEBE4 | Primary text |
-| textSecondary | #8B92A0 | Secondary text |
-| textFaint | #4E5560 | Faint/disabled text |
+| bg | #222831 | Base background |
+| bgCard | #2A2F3A | Card surfaces |
+| bgElevated | #393E46 | Elevated surfaces, inputs |
+| border | #444C58 | Borders, dividers |
+| accent | #FD7014 | Primary action, highlights |
+| green | #22C55E | Success, confirmed |
+| amber | #F59E0B | Warning, mesh relay |
+| red | #EF4444 | Error, frozen, danger |
+| blue | #3B82F6 | Info, savings |
+| textPrimary | #EEEEEE | Primary text |
+| textSecondary | #9CA3AF | Secondary text |
+| textMuted | #6B7280 | Muted labels |
 
 ## Typography
 
-- **Display:** Fraunces 600 SemiBold — balances, big numbers
-- **Display Italic:** Fraunces 500 Medium Italic — freeze headline only
-- **Mono:** IBM Plex Mono 500 Medium — addresses, timestamps, limits, status
-- **Mono Regular:** IBM Plex Mono 400 Regular — body copy in mono contexts
+- **Display:** Inter 700 Bold — headings, balances
+- **Body:** Inter 400 Regular — descriptions, labels
+- **Medium:** Inter 500 Medium — navigation, buttons
+- **Mono:** JetBrains Mono 400 Regular — addresses, hashes, amounts
+
+## Navigation
+
+5-tab bottom bar: Home, Send, Receive, Browser, Settings
 
 ## Tone
 
-Field-grade instrument you trust with your life. Aviation avionics meets ham radio gear. Nothing glossy, nothing rounded-and-friendly.
-
-## Motion
-
-Spring physics (damping: 18, stiffness: 180). Precision, not playfulness. Staggered entrances at 40-60ms. Continuous pulse on connectivity indicator.
+Professional wallet. No noise, no clutter. Every element earns its space.
 
 _Initialized: 2026-07-27_

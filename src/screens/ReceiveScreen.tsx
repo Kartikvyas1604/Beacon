@@ -34,6 +34,7 @@ function QRPlaceholder({ size }: { size: number }) {
 export default function ReceiveScreen() {
   const address = useWalletStore(s => s.address);
   const limits = useWalletStore(s => s.limits);
+  const federationAddress = useWalletStore(s => s.federationAddress);
   const autoPct = (limits.autoSaveBps / 100).toFixed(0);
 
   const handleCopy = () => {
@@ -58,9 +59,17 @@ export default function ReceiveScreen() {
           </Pressable>
         </View>
 
+        {federationAddress && (
+          <View style={styles.fedCard}>
+            <Text style={styles.fedLabel}>FEDERATION ADDRESS</Text>
+            <Text style={styles.fedText}>{federationAddress}</Text>
+            <Text style={styles.fedDesc}>Share this human-readable address instead of the long key.</Text>
+          </View>
+        )}
+
         <View style={styles.saveCard}>
           <View style={styles.saveHeader}>
-            <Text style={styles.saveLabel}>Auto-Save</Text>
+            <Text style={styles.saveLabel}>Auto-Save Routing</Text>
             <Text style={styles.savePct}>{autoPct}%</Text>
           </View>
           <Text style={styles.saveDesc}>
@@ -77,95 +86,36 @@ export default function ReceiveScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 60,
-    alignItems: 'center',
-    gap: 24,
-  },
-  title: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: colors.textPrimary,
-    alignSelf: 'flex-start',
-  },
-  qrCard: {
-    backgroundColor: '#EEEEEE',
-    padding: 16,
-    borderRadius: 20,
-  },
+  content: { flex: 1, padding: 20, paddingTop: 60, alignItems: 'center', gap: 20 },
+  title: { fontFamily: 'Inter_700Bold', fontSize: 24, color: colors.textPrimary, alignSelf: 'flex-start' },
+  qrCard: { backgroundColor: '#EEEEEE', padding: 16, borderRadius: 20 },
   addressCard: {
-    width: '100%',
-    backgroundColor: colors.bgCard,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    gap: 10,
+    width: '100%', backgroundColor: colors.bgCard, borderRadius: 16, padding: 16,
+    alignItems: 'center', gap: 10,
   },
-  addressLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    letterSpacing: 1,
-    color: colors.textMuted,
-  },
+  addressLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 11, letterSpacing: 1, color: colors.textMuted },
   addressText: {
-    fontFamily: 'JetBrainsMono_400Regular',
-    fontSize: 13,
-    color: colors.textPrimary,
-    textAlign: 'center',
-    lineHeight: 20,
+    fontFamily: 'JetBrainsMono_400Regular', fontSize: 13, color: colors.textPrimary,
+    textAlign: 'center', lineHeight: 20,
   },
   copyBtn: {
-    backgroundColor: colors.accentDim,
-    borderRadius: 999,
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.accent + '30',
+    backgroundColor: colors.accentDim, borderRadius: 999, paddingHorizontal: 24, paddingVertical: 8,
+    borderWidth: 1, borderColor: colors.accent + '30',
   },
-  copyText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: colors.accent,
+  copyText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: colors.accent },
+  fedCard: {
+    width: '100%', backgroundColor: colors.bgCard, borderRadius: 16, padding: 16, gap: 6,
   },
+  fedLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 11, letterSpacing: 1, color: colors.textMuted },
+  fedText: { fontFamily: 'JetBrainsMono_400Regular', fontSize: 15, color: colors.accent },
+  fedDesc: { fontFamily: 'Inter_400Regular', fontSize: 12, color: colors.textMuted, lineHeight: 18 },
   saveCard: {
-    width: '100%',
-    backgroundColor: colors.bgCard,
-    borderRadius: 16,
-    padding: 16,
-    gap: 10,
+    width: '100%', backgroundColor: colors.bgCard, borderRadius: 16, padding: 16, gap: 10,
   },
-  saveHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  saveLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.textSecondary,
-  },
-  savePct: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 18,
-    color: colors.blue,
-  },
-  saveDesc: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: colors.textMuted,
-    lineHeight: 18,
-  },
-  saveTrack: {
-    height: 4,
-    backgroundColor: colors.bgElevated,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  saveFill: {
-    height: '100%',
-    backgroundColor: colors.blue,
-    borderRadius: 2,
-  },
+  saveHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  saveLabel: { fontFamily: 'Inter_400Regular', fontSize: 13, color: colors.textSecondary },
+  savePct: { fontFamily: 'Inter_700Bold', fontSize: 18, color: colors.blue },
+  saveDesc: { fontFamily: 'Inter_400Regular', fontSize: 12, color: colors.textMuted, lineHeight: 18 },
+  saveTrack: { height: 4, backgroundColor: colors.bgElevated, borderRadius: 2, overflow: 'hidden' },
+  saveFill: { height: '100%', backgroundColor: colors.blue, borderRadius: 2 },
 });

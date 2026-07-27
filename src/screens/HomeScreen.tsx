@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Pressable,
+  View, Text, StyleSheet, ScrollView, Pressable, Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useWalletStore } from '../state/walletStore';
-import { colors, spacing, radius, shadow } from '../theme';
+import { colors, radius, shadow } from '../theme';
 import { SignalStatusBar, LedgerRow, FuelGauge, MeshBanner } from '../components';
 
 export default function HomeScreen() {
@@ -18,24 +18,24 @@ export default function HomeScreen() {
   const connectivity = useWalletStore(s => s.connectivity);
   const peers = useWalletStore(s => s.meshPeers);
   const hops = useWalletStore(s => s.hopCount);
+  const accounts = useWalletStore(s => s.accounts);
+  const activeAccount = useWalletStore(s => s.activeAccount);
+  const setActiveAccount = useWalletStore(s => s.setActiveAccount);
   const dailyLeft = limits.dailyLimit - limits.dailyUsed;
+  const [showAccounts, setShowAccounts] = useState(false);
 
   return (
     <View style={styles.screen}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Beacon Wallet</Text>
-            <Text style={styles.subtitle}>Stellar Mesh Network</Text>
+            <Pressable style={styles.accountPill} onPress={() => setShowAccounts(true)}>
+              <Text style={styles.accountName}>{activeAccount.name}</Text>
+              <Text style={styles.accountChevron}>▾</Text>
+            </Pressable>
           </View>
           <View style={styles.headerRight}>
-            <Pressable
-              style={styles.statusPill}
-              onPress={() => nav.navigate('Mesh')}
-            >
+            <Pressable onPress={() => nav.navigate('Mesh')}>
               <SignalStatusBar connectivity={connectivity} />
             </Pressable>
             {frozen && (
@@ -75,43 +75,60 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.quickActions}>
-          <Pressable
-            style={[styles.quickBtn, { backgroundColor: colors.accent }]}
-            onPress={() => nav.navigate('Send')}
-          >
+          <Pressable style={[styles.quickBtn, { backgroundColor: colors.accent }]} onPress={() => nav.navigate('Send')}>
             <Text style={styles.quickBtnIcon}>↗</Text>
             <Text style={styles.quickBtnLabel}>Send</Text>
           </Pressable>
-          <Pressable
-            style={[styles.quickBtn, styles.quickBtnOutline]}
-            onPress={() => nav.navigate('Receive')}
-          >
+          <Pressable style={[styles.quickBtn, styles.quickBtnOutline]} onPress={() => nav.navigate('Receive')}>
             <Text style={[styles.quickBtnIcon, { color: colors.accent }]}>↙</Text>
             <Text style={[styles.quickBtnLabel, { color: colors.accent }]}>Receive</Text>
+          </Pressable>
+          <Pressable style={[styles.quickBtn, styles.quickBtnOutline]} onPress={() => nav.navigate('Swap')}>
+            <Text style={[styles.quickBtnIcon, { color: colors.accent }]}>↕</Text>
+            <Text style={[styles.quickBtnLabel, { color: colors.accent }]}>Swap</Text>
           </Pressable>
         </View>
 
         <FuelGauge label="Daily Limit" value={dailyLeft} max={limits.dailyLimit} />
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          {txs.length === 0 ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyIcon}>◇</Text>
-              <Text style={styles.emptyText}>No transactions yet</Text>
-            </View>
-          ) : (
-            txs.slice(0, 5).map((tx, i) => (
-              <React.Fragment key={tx.id}>
-                <LedgerRow transaction={tx} />
-                {i < Math.min(txs.length, 5) - 1 && <View style={styles.divider} />}
-              </React.Fragment>
-            ))
-          )}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Activity</Text>
+            <Pressable onPress={() => nav.navigate('History')}>
+              <Text style={styles.sectionAction}>View All</Text>
+            </Pressable>
+          </View>
+          {txs.slice(0, 5).map((tx, i) => (
+            <React.Fragment key={tx.id}>
+              <LedgerRow transaction={tx} />
+              {i < 4 && <View style={styles.divider} />}
+            </React.Fragment>
+          ))}
         </View>
 
         <View style={{ height: 100 }} />
       </ScrollView>
+
+      <Modal visible={showAccounts} transparent animationType="slide">
+        <Pressable style={styles.modalOverlay} onPress={() => setShowAccounts(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Switch Account</Text>
+            {accounts.map(account => (
+              <Pressable
+                key={account.id}
+                style={[styles.accountOption, account.id === activeAccount.id && styles.accountActive]}
+                onPress={() => { setActiveAccount(account.id); setShowAccounts(false); }}
+              >
+                <View>
+                  <Text style={styles.accountOptionName}>{account.name}</Text>
+                  <Text style={styles.accountOptionAddr}>{account.address.slice(0, 16)}...</Text>
+                </View>
+                {account.id === activeAccount.id && <Text style={styles.checkmark}>✓</Text>}
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -120,123 +137,65 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 20, paddingTop: 60, gap: 20 },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
   headerRight: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  greeting: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: colors.textPrimary,
+  accountPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: colors.bgCard, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999,
   },
-  subtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  statusPill: {},
+  accountName: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: colors.textPrimary },
+  accountChevron: { fontSize: 10, color: colors.textMuted },
   frozenPill: {
-    backgroundColor: colors.redDim,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
+    backgroundColor: colors.redDim, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6,
   },
-  frozenText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    letterSpacing: 1,
-    color: colors.red,
-  },
+  frozenText: { fontFamily: 'Inter_700Bold', fontSize: 10, letterSpacing: 1, color: colors.red },
   balanceCard: {
-    backgroundColor: colors.bgCard,
-    borderRadius: 20,
-    padding: 24,
-    gap: 4,
+    backgroundColor: colors.bgCard, borderRadius: 20, padding: 24, gap: 4,
   },
-  balanceLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.textMuted,
-  },
+  balanceLabel: { fontFamily: 'Inter_400Regular', fontSize: 13, color: colors.textMuted },
   balanceAmount: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 42,
-    color: colors.textPrimary,
-    letterSpacing: -1.5,
-    fontVariant: ['tabular-nums'] as any,
-    marginVertical: 4,
+    fontFamily: 'Inter_700Bold', fontSize: 42, color: colors.textPrimary,
+    letterSpacing: -1.5, fontVariant: ['tabular-nums'] as any, marginVertical: 4,
   },
   balanceBreakdown: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginTop: 8,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
+    flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 8,
+    paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border,
   },
   breakdownItem: { flex: 1, gap: 2 },
-  breakdownLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: colors.textMuted,
-  },
+  breakdownLabel: { fontFamily: 'Inter_400Regular', fontSize: 12, color: colors.textMuted },
   breakdownValue: {
-    fontFamily: 'JetBrainsMono_400Regular',
-    fontSize: 15,
-    color: colors.textPrimary,
+    fontFamily: 'JetBrainsMono_400Regular', fontSize: 15, color: colors.textPrimary,
     fontVariant: ['tabular-nums'] as any,
   },
-  breakdownDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: colors.border,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
+  breakdownDivider: { width: 1, height: 28, backgroundColor: colors.border },
+  quickActions: { flexDirection: 'row', gap: 10 },
   quickBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 14,
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, paddingVertical: 14, borderRadius: 14,
   },
-  quickBtnOutline: {
-    borderWidth: 1.5,
-    borderColor: colors.accent,
-    backgroundColor: 'transparent',
-  },
+  quickBtnOutline: { borderWidth: 1.5, borderColor: colors.accent, backgroundColor: 'transparent' },
   quickBtnIcon: { fontSize: 16, color: colors.bg },
-  quickBtnLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
-    color: colors.bg,
-  },
+  quickBtnLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: colors.bg },
   section: { gap: 12 },
-  sectionTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: colors.textPrimary,
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: colors.textPrimary },
+  sectionAction: { fontFamily: 'Inter_500Medium', fontSize: 13, color: colors.accent },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end',
   },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.border,
+  modalContent: {
+    backgroundColor: colors.bgCard, borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    padding: 20, paddingTop: 12, gap: 8, paddingBottom: 40,
   },
-  empty: {
-    alignItems: 'center',
-    paddingVertical: 32,
-    gap: 8,
+  modalTitle: { fontFamily: 'Inter_700Bold', fontSize: 18, color: colors.textPrimary, marginBottom: 8, textAlign: 'center' },
+  accountOption: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    padding: 14, borderRadius: 12, backgroundColor: colors.bgElevated,
   },
-  emptyIcon: { fontSize: 28, color: colors.textMuted, opacity: 0.4 },
-  emptyText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.textMuted,
-  },
+  accountActive: { borderWidth: 1, borderColor: colors.accent },
+  accountOptionName: { fontFamily: 'Inter_600SemiBold', fontSize: 15, color: colors.textPrimary },
+  accountOptionAddr: { fontFamily: 'JetBrainsMono_400Regular', fontSize: 12, color: colors.textMuted },
+  checkmark: { fontFamily: 'Inter_700Bold', fontSize: 16, color: colors.accent },
 });
