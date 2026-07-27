@@ -6,3 +6,4 @@ export { RadarPeerView } from './RadarPeerView';
 export { FuelGauge } from './FuelGauge';
 export { Panel } from './Panel';
 export { BackgroundTexture } from './BackgroundTexture';
+export { MeshBanner } from './MeshBanner';
