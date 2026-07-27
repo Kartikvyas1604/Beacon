@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, DimensionValue } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,7 +10,7 @@ import Animated, {
 import { colors } from '../theme';
 
 interface Props {
-  width: number | string;
+  width: DimensionValue;
   height: number;
   borderRadius?: number;
 }
