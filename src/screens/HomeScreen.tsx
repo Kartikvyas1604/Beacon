@@ -5,26 +5,24 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
-  FlatList,
 } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withDelay,
-  interpolate,
   Easing,
 } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { useWalletStore } from '../state/walletStore';
 import { colors, spacing, radius } from '../theme';
-import { typography } from '../theme/typography';
 import {
   SignalStatusBar,
   LedgerRow,
   FuelGauge,
   Panel,
   BackgroundTexture,
+  MeshBanner,
 } from '../components';
 
 const STAGGER = 50;
@@ -60,6 +58,9 @@ export default function HomeScreen() {
   const limits = useWalletStore((s) => s.limits);
   const recentTransactions = useWalletStore((s) => s.recentTransactions);
   const frozen = useWalletStore((s) => s.frozen);
+  const connectivity = useWalletStore((s) => s.connectivity);
+  const meshPeers = useWalletStore((s) => s.meshPeers);
+  const hopCount = useWalletStore((s) => s.hopCount);
 
   const dailyRemaining = limits.dailyLimit - limits.dailyUsed;
 
@@ -72,10 +73,30 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <StaggerItem index={0}>
-          <SignalStatusBar onPress={() => nav.navigate('Mesh')} />
+          <View style={styles.topRow}>
+            <SignalStatusBar onPress={() => nav.navigate('Mesh')} />
+            <Pressable
+              style={[styles.freezeQuick, frozen && styles.freezeQuickActive]}
+              onPress={() => nav.navigate('Freeze')}
+              accessibilityRole="button"
+              accessibilityLabel="Emergency freeze"
+            >
+              <Text style={[styles.freezeQuickText, frozen && styles.freezeQuickTextActive]}>
+                {frozen ? 'FROZEN' : 'FREEZE'}
+              </Text>
+            </Pressable>
+          </View>
         </StaggerItem>
 
-        <StaggerItem index={1}>
+        {connectivity === 'mesh' && (
+          <StaggerItem index={1}>
+            <Pressable onPress={() => nav.navigate('Mesh')}>
+              <MeshBanner hopCount={hopCount} peerCount={meshPeers.length} />
+            </Pressable>
+          </StaggerItem>
+        )}
+
+        <StaggerItem index={2}>
           <View style={styles.balanceSection}>
             <Text style={styles.balanceLabel}>SPENDABLE</Text>
             <Text style={styles.balanceAmount}>
@@ -87,7 +108,7 @@ export default function HomeScreen() {
           </View>
         </StaggerItem>
 
-        <StaggerItem index={2}>
+        <StaggerItem index={3}>
           <FuelGauge
             label="DAILY LIMIT REMAINING"
             value={dailyRemaining}
@@ -95,10 +116,12 @@ export default function HomeScreen() {
           />
         </StaggerItem>
 
-        <StaggerItem index={3}>
+        <StaggerItem index={4}>
           <Pressable
             style={styles.savingsRow}
             onPress={() => nav.navigate('Limits')}
+            accessibilityRole="button"
+            accessibilityLabel="View savings settings"
           >
             <View>
               <Text style={styles.savingsLabel}>SAVINGS</Text>
@@ -112,7 +135,7 @@ export default function HomeScreen() {
           </Pressable>
         </StaggerItem>
 
-        <StaggerItem index={4}>
+        <StaggerItem index={5}>
           <Panel
             title="RECENT TRANSACTIONS"
             rightElement={
@@ -165,6 +188,31 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     paddingTop: 60,
     gap: spacing.xl,
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  freezeQuick: {
+    borderWidth: 1,
+    borderColor: colors.frozen + '40',
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+  },
+  freezeQuickActive: {
+    backgroundColor: colors.frozen + '20',
+    borderColor: colors.frozen,
+  },
+  freezeQuickText: {
+    fontFamily: 'IBMPlexMono_500Medium',
+    fontSize: 9,
+    letterSpacing: 1.5,
+    color: colors.frozen,
+  },
+  freezeQuickTextActive: {
+    color: colors.frozen,
   },
   balanceSection: {
     gap: spacing.xs,
