@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   useFonts,
@@ -32,14 +33,16 @@ export default function App() {
 
   if (!onboarded) {
     return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#0B0E12' }}>
+        <StatusBar style="light" />
         <OnboardingScreen onComplete={handleOnboardingComplete} />
       </GestureHandlerRootView>
     );
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#0B0E12' }}>
+      <StatusBar style="light" />
       <RootNavigator />
     </GestureHandlerRootView>
   );
