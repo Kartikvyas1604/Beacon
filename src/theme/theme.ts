@@ -2,29 +2,33 @@ import { StyleSheet } from 'react-native';
 
 export const colors = {
   bg: '#222831',
-  bgCard: '#393E46',
-  bgElevated: '#3d4350',
-  bgInput: '#3d4350',
+  bgCard: '#2A2F3A',
+  bgElevated: '#393E46',
+  bgInput: '#313640',
   hairline: '#393E46',
-  border: '#4a5060',
+  border: '#444C58',
 
   accent: '#FD7014',
-  accentDim: 'rgba(253,112,20,0.12)',
-  accentGlow: 'rgba(253,112,20,0.06)',
+  accentDim: 'rgba(253,112,20,0.10)',
+  accentGlow: 'rgba(253,112,20,0.05)',
+  accentMuted: '#D45A0F',
 
-  green: '#66BB6A',
-  greenDim: 'rgba(102,187,106,0.12)',
-  amber: '#FFB300',
-  amberDim: 'rgba(255,179,0,0.12)',
-  red: '#EF5350',
-  redDim: 'rgba(239,83,80,0.12)',
-  blue: '#5C9CE6',
-  blueDim: 'rgba(92,156,230,0.12)',
+  green: '#22C55E',
+  greenDim: 'rgba(34,197,94,0.10)',
+  amber: '#F59E0B',
+  amberDim: 'rgba(245,158,11,0.10)',
+  red: '#EF4444',
+  redDim: 'rgba(239,68,68,0.10)',
+  blue: '#3B82F6',
+  blueDim: 'rgba(59,130,246,0.10)',
 
   textPrimary: '#EEEEEE',
-  textSecondary: '#b0b0b0',
-  textMuted: '#7a7a7a',
-  textFaint: '#4a4a4a',
+  textSecondary: '#9CA3AF',
+  textMuted: '#6B7280',
+  textFaint: '#4B5563',
+
+  white: '#FFFFFF',
+  black: '#000000',
 } as const;
 
 export const spacing = {
@@ -54,24 +58,17 @@ export const shadow = {
   card: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 3,
   },
   elevated: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 12,
-    elevation: 6,
+    elevation: 5,
   },
-  glow: (color: string) => ({
-    shadowColor: color,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 8,
-  }),
 } as const;
 
 export const baseStyles = StyleSheet.create({

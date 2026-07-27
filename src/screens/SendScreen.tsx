@@ -1,12 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TextInput, Pressable,
   ScrollView, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useWalletStore } from '../state/walletStore';
-import { colors, spacing, radius, shadow } from '../theme';
-import { RadialConfirm, Panel, BackgroundTexture } from '../components';
+import { colors, radius } from '../theme';
+import { MeshBanner } from '../components';
 
 export default function SendScreen() {
   const nav = useNavigation();
@@ -16,115 +16,106 @@ export default function SendScreen() {
 
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
-  const [confirmed, setConfirmed] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const amt = parseFloat(amount) || 0;
   const dailyLeft = limits.dailyLimit - limits.dailyUsed;
   const overDaily = amt > dailyLeft;
   const overPerTx = amt > limits.perTxMax;
-  const overVelocity = limits.hourlyCount >= limits.hourlyVelocity;
-  const valid = amt > 0 && !overDaily && !overPerTx && !overVelocity;
-  const canSend = recipient.length > 0 && valid && !frozen;
+  const canSend = recipient.length > 4 && amt > 0 && !overDaily && !overPerTx && !frozen;
 
-  const handleConfirm = useCallback(() => {
-    setConfirmed(true);
+  const handleSend = () => {
+    if (!canSend) return;
+    setSent(true);
     setTimeout(() => nav.goBack(), 2000);
-  }, [nav]);
+  };
 
   const isMesh = connectivity === 'mesh';
 
   return (
     <View style={styles.screen}>
-      <BackgroundTexture />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Send Payment</Text>
 
-          {isMesh && (
-            <View style={styles.meshBanner}>
-              <Text style={styles.meshDot}>◐</Text>
-              <Text style={styles.meshText}>
-                This transaction will relay via nearby mesh devices and confirm once connectivity resumes.
-              </Text>
-            </View>
-          )}
+          {isMesh && <MeshBanner hopCount={0} peerCount={0} />}
 
           {frozen && (
-            <View style={[styles.meshBanner, { backgroundColor: colors.redDim, borderColor: colors.red + '30' }]}>
-              <Text style={[styles.meshDot, { color: colors.red }]}>●</Text>
-              <Text style={[styles.meshText, { color: colors.red }]}>Wallet frozen — unfreeze to send</Text>
+            <View style={styles.errorBanner}>
+              <Text style={styles.errorText}>Wallet frozen — unfreeze to send</Text>
             </View>
           )}
 
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Recipient</Text>
+            <Text style={styles.fieldLabel}>RECIPIENT</Text>
             <TextInput
               style={styles.input}
-              value={recipient} onChangeText={setRecipient}
-              placeholder="G..." placeholderTextColor={colors.textFaint}
-              autoCapitalize="none" autoCorrect={false} spellCheck={false} editable={!frozen}
+              value={recipient}
+              onChangeText={setRecipient}
+              placeholder="Paste Stellar address..."
+              placeholderTextColor={colors.textFaint}
+              autoCapitalize="none"
+              autoCorrect={false}
+              spellCheck={false}
+              editable={!frozen}
             />
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>Amount</Text>
-            <TextInput
-              style={[styles.input, styles.amountInput]}
-              value={amount} onChangeText={setAmount}
-              placeholder="0.00" placeholderTextColor={colors.textFaint}
-              keyboardType="decimal-pad" editable={!frozen}
-            />
+            <Text style={styles.fieldLabel}>AMOUNT</Text>
+            <View style={styles.amountWrap}>
+              <TextInput
+                style={styles.amountInput}
+                value={amount}
+                onChangeText={setAmount}
+                placeholder="0.00"
+                placeholderTextColor={colors.textFaint}
+                keyboardType="decimal-pad"
+                editable={!frozen}
+              />
+            </View>
           </View>
 
-          <Panel title="Transaction Impact">
-            <View style={styles.impactRow}>
-              <Text style={styles.impactLabel}>Daily remaining</Text>
-              <Text style={[styles.impactVal, overDaily && { color: colors.red }]}>
-                ₤{dailyLeft.toLocaleString()} → ₤{(dailyLeft - amt).toLocaleString()}
-              </Text>
-            </View>
-            <View style={styles.impactRow}>
-              <Text style={styles.impactLabel}>Per-tx cap</Text>
-              <Text style={[styles.impactVal, overPerTx && { color: colors.red }]}>
-                ₤{limits.perTxMax.toLocaleString()}{overPerTx ? ' EXCEEDED' : ''}
-              </Text>
-            </View>
-            <View style={styles.impactRow}>
-              <Text style={styles.impactLabel}>Hourly velocity</Text>
-              <Text style={[styles.impactVal, overVelocity && { color: colors.red }]}>
-                {limits.hourlyCount}/{limits.hourlyVelocity}{overVelocity ? ' MAXED' : ''}
-              </Text>
-            </View>
-          </Panel>
-
           {amt > 0 && (
-            <View style={styles.autoSaveRow}>
-              <Text style={styles.autoSaveLabel}>Auto-save routing</Text>
-              <Text style={styles.autoSaveVal}>
-                ₤{(amt * (limits.autoSaveBps / 10000)).toFixed(2)} → savings
-              </Text>
+            <View style={styles.preview}>
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabel}>Daily remaining</Text>
+                <Text style={[styles.previewValue, overDaily && { color: colors.red }]}>
+                  {dailyLeft.toLocaleString()} → {(dailyLeft - amt).toLocaleString()}
+                </Text>
+              </View>
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabel}>Per-tx cap</Text>
+                <Text style={[styles.previewValue, overPerTx && { color: colors.red }]}>
+                  {limits.perTxMax.toLocaleString()}{overPerTx ? ' EXCEEDED' : ''}
+                </Text>
+              </View>
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabel}>Auto-save</Text>
+                <Text style={[styles.previewValue, { color: colors.blue }]}>
+                  {(amt * (limits.autoSaveBps / 10000)).toFixed(2)} → savings
+                </Text>
+              </View>
             </View>
           )}
 
-          {confirmed ? (
-            <View style={styles.confirmedBox}>
-              <Text style={styles.confirmedGlyph}>✓</Text>
-              <Text style={styles.confirmedText}>
-                {isMesh ? 'Relaying via mesh' : 'Submitted to network'}
+          {sent ? (
+            <View style={styles.sentBox}>
+              <Text style={styles.sentIcon}>✓</Text>
+              <Text style={styles.sentText}>
+                {isMesh ? 'Relaying via mesh...' : 'Submitted to network'}
               </Text>
-            </View>
-          ) : canSend ? (
-            <View style={styles.confirmRow}>
-              <RadialConfirm label="Hold to send" onConfirm={handleConfirm} size={72} duration={900} />
-              <Text style={styles.holdHint}>Press and hold to confirm</Text>
             </View>
           ) : (
-            <View style={styles.disabledBox}>
-              <Text style={styles.disabledText}>
-                {frozen ? 'WALLET FROZEN' : !recipient ? 'ENTER RECIPIENT' : !amt ? 'ENTER AMOUNT'
-                  : overDaily ? 'EXCEEDS DAILY LIMIT' : overPerTx ? 'EXCEEDS PER-TX LIMIT' : 'VELOCITY REACHED'}
+            <Pressable
+              style={[styles.sendBtn, !canSend && styles.sendBtnDisabled]}
+              onPress={handleSend}
+              disabled={!canSend}
+            >
+              <Text style={[styles.sendBtnText, !canSend && { opacity: 0.5 }]}>
+                {frozen ? 'WALLET FROZEN' : 'Send Payment'}
               </Text>
-            </View>
+            </Pressable>
           )}
 
           <View style={{ height: 40 }} />
@@ -136,73 +127,97 @@ export default function SendScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.xl, paddingTop: 56, gap: spacing.lg },
+  content: { padding: 20, paddingTop: 60, gap: 20 },
   title: {
-    fontFamily: 'Fraunces_600SemiBold', fontSize: 22,
-    color: colors.textPrimary, letterSpacing: -0.5,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 24,
+    color: colors.textPrimary,
   },
-  meshBanner: {
-    flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm,
-    backgroundColor: colors.amberDim, borderRadius: radius.sm,
-    padding: spacing.md, borderWidth: 1, borderColor: colors.amber + '25',
+  errorBanner: {
+    backgroundColor: colors.redDim,
+    borderRadius: 12,
+    padding: 12,
   },
-  meshDot: { fontFamily: 'IBMPlexMono_500Medium', fontSize: 14, color: colors.amber, marginTop: 1 },
-  meshText: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12,
-    color: colors.textSecondary, flex: 1, lineHeight: 18,
+  errorText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: colors.red,
   },
-  field: { gap: spacing.xs },
+  field: { gap: 6 },
   fieldLabel: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 11,
-    letterSpacing: 0.8, textTransform: 'uppercase', color: colors.textMuted,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    letterSpacing: 1,
+    color: colors.textMuted,
   },
   input: {
-    backgroundColor: colors.bgInput, borderRadius: radius.sm,
-    borderWidth: 1, borderColor: colors.border,
-    padding: spacing.md, fontFamily: 'IBMPlexMono_400Regular',
-    fontSize: 14, color: colors.textPrimary,
+    backgroundColor: colors.bgCard,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 14,
+    fontFamily: 'JetBrainsMono_400Regular',
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+  amountWrap: {
+    backgroundColor: colors.bgCard,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   amountInput: {
-    fontFamily: 'Fraunces_600SemiBold', fontSize: 32,
-    paddingVertical: spacing.xl, letterSpacing: -0.5,
+    padding: 14,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 32,
+    color: colors.textPrimary,
   },
-  impactRow: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1, borderBottomColor: colors.hairline,
+  preview: {
+    backgroundColor: colors.bgCard,
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
   },
-  impactLabel: { fontFamily: 'IBMPlexMono_400Regular', fontSize: 12, color: colors.textSecondary },
-  impactVal: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 12,
-    color: colors.textPrimary, fontVariant: ['tabular-nums'],
+  previewRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  autoSaveRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+  previewLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.textSecondary,
   },
-  autoSaveLabel: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12, color: colors.textMuted,
+  previewValue: {
+    fontFamily: 'JetBrainsMono_400Regular',
+    fontSize: 12,
+    color: colors.textPrimary,
   },
-  autoSaveVal: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 12,
-    color: colors.blue, fontVariant: ['tabular-nums'],
+  sendBtn: {
+    backgroundColor: colors.accent,
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
   },
-  confirmRow: { alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xxl },
-  holdHint: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 11,
-    color: colors.textMuted, letterSpacing: 0.5,
+  sendBtnDisabled: {
+    opacity: 0.5,
   },
-  disabledBox: { alignItems: 'center', paddingVertical: spacing.xxl },
-  disabledText: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 11,
-    letterSpacing: 1, color: colors.textMuted,
+  sendBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 16,
+    color: colors.bg,
   },
-  confirmedBox: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: spacing.sm, paddingVertical: spacing.xxl,
+  sentBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
   },
-  confirmedGlyph: { color: colors.green, fontSize: 18 },
-  confirmedText: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 13,
-    letterSpacing: 0.5, color: colors.green,
+  sentIcon: { color: colors.green, fontSize: 18 },
+  sentText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: colors.green,
   },
 });

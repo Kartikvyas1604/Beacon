@@ -1,18 +1,16 @@
 import 'react-native-gesture-handler';
-import 'react-native-reanimated';
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
 import * as Font from 'expo-font';
 import {
-  IBMPlexMono_400Regular,
-  IBMPlexMono_500Medium,
-  IBMPlexMono_600SemiBold,
-  IBMPlexMono_700Bold,
-} from '@expo-google-fonts/ibm-plex-mono';
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
 import {
-  Fraunces_400Regular,
-  Fraunces_600SemiBold,
-} from '@expo-google-fonts/fraunces';
+  JetBrainsMono_400Regular,
+} from '@expo-google-fonts/jetbrains-mono';
 import { useWalletStore } from './src/state/walletStore';
 import RootNavigator from './src/navigation/RootNavigator';
 import OnboardingScreen from './src/screens/OnboardingScreen';
@@ -24,19 +22,16 @@ function AppContent() {
 }
 
 export default function App() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     Font.loadAsync({
-      IBMPlexMono_400Regular,
-      IBMPlexMono_500Medium,
-      IBMPlexMono_600SemiBold,
-      IBMPlexMono_700Bold,
-      Fraunces_400Regular,
-      Fraunces_600SemiBold,
-    })
-      .then(() => setFontsLoaded(true))
-      .catch(() => setFontsLoaded(true));
+      Inter_400Regular,
+      Inter_500Medium,
+      Inter_600SemiBold,
+      Inter_700Bold,
+      JetBrainsMono_400Regular,
+    }).finally(() => setReady(true));
   }, []);
 
   return (

@@ -3,8 +3,7 @@ import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { Svg, Rect } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { useWalletStore } from '../state/walletStore';
-import { colors, spacing, radius, shadow } from '../theme';
-import { BackgroundTexture } from '../components';
+import { colors, radius } from '../theme';
 
 function QRPlaceholder({ size }: { size: number }) {
   const cell = size / 25;
@@ -24,7 +23,7 @@ function QRPlaceholder({ size }: { size: number }) {
   }
   return (
     <Svg width={size} height={size}>
-      <Rect width={size} height={size} fill={colors.textPrimary} rx={4} />
+      <Rect width={size} height={size} fill="#EEEEEE" rx={4} />
       {m.map((row, i) => row.map((c, j) => c ? (
         <Rect key={`${i}-${j}`} x={j * cell} y={i * cell} width={cell} height={cell} fill={colors.bg} />
       ) : null))}
@@ -44,32 +43,31 @@ export default function ReceiveScreen() {
 
   return (
     <View style={styles.screen}>
-      <BackgroundTexture />
       <View style={styles.content}>
         <Text style={styles.title}>Receive</Text>
 
-        <View style={[styles.qrWrap, shadow.elevated]}>
+        <View style={styles.qrCard}>
           <QRPlaceholder size={200} />
         </View>
 
-        <View style={styles.addressBlock}>
-          <Text style={styles.addressLabel}>Your Address</Text>
+        <View style={styles.addressCard}>
+          <Text style={styles.addressLabel}>YOUR ADDRESS</Text>
           <Text style={styles.addressText}>{address}</Text>
-          <Pressable style={styles.copyBtn} onPress={handleCopy} accessibilityRole="button" accessibilityLabel="Copy address">
+          <Pressable style={styles.copyBtn} onPress={handleCopy}>
             <Text style={styles.copyText}>Copy Address</Text>
           </Pressable>
         </View>
 
-        <View style={styles.autoCard}>
-          <View style={styles.autoHeader}>
-            <Text style={styles.autoLabel}>Auto-Save Routing</Text>
-            <Text style={styles.autoPct}>{autoPct}%</Text>
+        <View style={styles.saveCard}>
+          <View style={styles.saveHeader}>
+            <Text style={styles.saveLabel}>Auto-Save</Text>
+            <Text style={styles.savePct}>{autoPct}%</Text>
           </View>
-          <Text style={styles.autoDesc}>
-            {autoPct}% of incoming funds automatically route to your savings balance.
+          <Text style={styles.saveDesc}>
+            {autoPct}% of incoming funds automatically route to savings.
           </Text>
-          <View style={styles.autoBar}>
-            <View style={[styles.autoBarFill, { width: `${parseInt(autoPct)}%` }]} />
+          <View style={styles.saveTrack}>
+            <View style={[styles.saveFill, { width: `${parseInt(autoPct)}%` }]} />
           </View>
         </View>
       </View>
@@ -80,55 +78,94 @@ export default function ReceiveScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: {
-    flex: 1, padding: spacing.xl, paddingTop: 56,
-    alignItems: 'center', gap: spacing.xxl,
+    flex: 1,
+    padding: 20,
+    paddingTop: 60,
+    alignItems: 'center',
+    gap: 24,
   },
   title: {
-    fontFamily: 'Fraunces_600SemiBold', fontSize: 22,
-    color: colors.textPrimary, letterSpacing: -0.5, alignSelf: 'flex-start',
+    fontFamily: 'Inter_700Bold',
+    fontSize: 24,
+    color: colors.textPrimary,
+    alignSelf: 'flex-start',
   },
-  qrWrap: {
-    backgroundColor: colors.textPrimary, padding: spacing.lg,
-    borderRadius: radius.lg, marginTop: spacing.xxl,
+  qrCard: {
+    backgroundColor: '#EEEEEE',
+    padding: 16,
+    borderRadius: 20,
   },
-  addressBlock: { alignItems: 'center', gap: spacing.sm, width: '100%' },
+  addressCard: {
+    width: '100%',
+    backgroundColor: colors.bgCard,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    gap: 10,
+  },
   addressLabel: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12, color: colors.textMuted,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    letterSpacing: 1,
+    color: colors.textMuted,
   },
   addressText: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 16,
-    color: colors.textPrimary, letterSpacing: 1,
+    fontFamily: 'JetBrainsMono_400Regular',
+    fontSize: 13,
+    color: colors.textPrimary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   copyBtn: {
-    marginTop: spacing.sm, backgroundColor: colors.accentDim,
-    borderRadius: radius.pill, paddingHorizontal: spacing.xxl,
-    paddingVertical: spacing.sm, borderWidth: 1, borderColor: colors.accent + '30',
+    backgroundColor: colors.accentDim,
+    borderRadius: 999,
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: colors.accent + '30',
   },
   copyText: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 12,
-    letterSpacing: 0.5, color: colors.accent,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: colors.accent,
   },
-  autoCard: {
-    width: '100%', backgroundColor: colors.bgCard,
-    borderRadius: radius.md, padding: spacing.lg, gap: spacing.sm,
+  saveCard: {
+    width: '100%',
+    backgroundColor: colors.bgCard,
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
   },
-  autoHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+  saveHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  autoLabel: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12, color: colors.textMuted,
+  saveLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.textSecondary,
   },
-  autoPct: {
-    fontFamily: 'Fraunces_600SemiBold', fontSize: 18,
-    color: colors.blue, fontVariant: ['tabular-nums'],
+  savePct: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 18,
+    color: colors.blue,
   },
-  autoDesc: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12,
-    color: colors.textMuted, lineHeight: 18,
+  saveDesc: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: colors.textMuted,
+    lineHeight: 18,
   },
-  autoBar: {
-    height: 4, backgroundColor: colors.border,
-    borderRadius: 2, overflow: 'hidden', marginTop: spacing.xs,
+  saveTrack: {
+    height: 4,
+    backgroundColor: colors.bgElevated,
+    borderRadius: 2,
+    overflow: 'hidden',
   },
-  autoBarFill: { height: '100%', backgroundColor: colors.blue, borderRadius: 2 },
+  saveFill: {
+    height: '100%',
+    backgroundColor: colors.blue,
+    borderRadius: 2,
+  },
 });

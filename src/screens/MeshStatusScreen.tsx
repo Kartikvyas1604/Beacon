@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useWalletStore } from '../state/walletStore';
-import { colors, spacing, radius } from '../theme';
-import { RadarPeerView, Panel } from '../components';
+import { colors, radius } from '../theme';
+import { RadarPeerView } from '../components';
 
 export default function MeshStatusScreen() {
+  const nav = useNavigation();
   const connectivity = useWalletStore(s => s.connectivity);
   const peers = useWalletStore(s => s.meshPeers);
   const hops = useWalletStore(s => s.hopCount);
@@ -13,51 +15,61 @@ export default function MeshStatusScreen() {
     : connectivity === 'online' ? colors.green : colors.red;
   const statusLabel = connectivity === 'online' ? 'On-chain'
     : connectivity === 'mesh' ? 'Mesh relay' : 'Offline';
-  const isMesh = connectivity === 'mesh';
 
   return (
     <View style={styles.screen}>
       <View style={styles.content}>
-        <Text style={styles.title}>Mesh Status</Text>
+        <View style={styles.header}>
+          <Pressable onPress={() => nav.goBack()}>
+            <Text style={styles.back}>← Back</Text>
+          </Pressable>
+          <Text style={styles.title}>Mesh Network</Text>
+        </View>
+
+        <View style={styles.statusCard}>
+          <View style={styles.statusRow}>
+            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+            <Text style={[styles.statusLabel, { color: statusColor }]}>{statusLabel}</Text>
+          </View>
+          {connectivity === 'mesh' && (
+            <Text style={styles.hopInfo}>
+              {hops} hop{hops !== 1 ? 's' : ''} to nearest relay device
+            </Text>
+          )}
+        </View>
 
         <View style={styles.radarWrap}>
           <View style={styles.radarRing} />
-          <View style={[styles.radarRing, styles.radarRing2]} />
-          <View style={[styles.radarRing, styles.radarRing3]} />
-          <View style={styles.radarDot} />
+          <View style={[styles.radarRing, styles.r2]} />
+          <View style={[styles.radarRing, styles.r3]} />
+          <View style={[styles.radarRing, styles.r4]} />
+          <View style={styles.radarCenter} />
         </View>
 
-        <View style={styles.statusRow}>
-          <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-          <Text style={[styles.statusText, { color: statusColor }]}>{statusLabel}</Text>
-          {isMesh && (
-            <Text style={styles.hopText}>{hops} hop{hops !== 1 ? 's' : ''} to relay</Text>
-          )}
-        </View>
-
-        <Panel title={`Nearby Peers (${peers.length})`}>
-          {peers.length === 0 ? (
-            <Text style={styles.emptyText}>No peers detected. Mesh scanning.</Text>
-          ) : (
-            peers.map((peer, i) => (
-              <React.Fragment key={peer.id}>
-                <RadarPeerView peer={peer} />
-                {i < peers.length - 1 && <View style={styles.divider} />}
-              </React.Fragment>
-            ))
-          )}
-        </Panel>
-
-        {isMesh && (
-          <View style={styles.infoBox}>
-            <Text style={styles.infoTitle}>How Mesh Relay Works</Text>
-            <Text style={styles.infoBody}>
-              When you go offline, your transactions are signed locally and
-              relayed through nearby devices with internet access. Each hop is
-              encrypted end-to-end — intermediate devices cannot read your data.
-            </Text>
+        <View style={styles.peerSection}>
+          <Text style={styles.sectionTitle}>Nearby Devices ({peers.length})</Text>
+          <View style={styles.peerCard}>
+            {peers.length === 0 ? (
+              <Text style={styles.emptyText}>Scanning for nearby devices...</Text>
+            ) : (
+              peers.map((peer, i) => (
+                <React.Fragment key={peer.id}>
+                  <RadarPeerView peer={peer} />
+                  {i < peers.length - 1 && <View style={styles.divider} />}
+                </React.Fragment>
+              ))
+            )}
           </View>
-        )}
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>How It Works</Text>
+          <Text style={styles.infoBody}>
+            Your transactions are signed locally and relayed through nearby
+            devices with internet access. Each hop is encrypted end-to-end.
+            Intermediate devices cannot read your data.
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -65,53 +77,89 @@ export default function MeshStatusScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: {
-    flex: 1, padding: spacing.xl, paddingTop: 56, gap: spacing.xxl,
+  content: { flex: 1, padding: 20, paddingTop: 56, gap: 24 },
+  header: { gap: 8 },
+  back: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: colors.accent,
   },
   title: {
-    fontFamily: 'Fraunces_600SemiBold', fontSize: 22,
-    color: colors.textPrimary, letterSpacing: -0.5,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 24,
+    color: colors.textPrimary,
+  },
+  statusCard: {
+    backgroundColor: colors.bgCard,
+    borderRadius: 14,
+    padding: 16,
+    gap: 8,
+  },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  statusLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+  },
+  hopInfo: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.textMuted,
   },
   radarWrap: {
-    width: 140, height: 140, alignSelf: 'center',
-    justifyContent: 'center', alignItems: 'center', marginVertical: spacing.md,
+    width: 160, height: 160,
+    alignSelf: 'center',
+    justifyContent: 'center', alignItems: 'center',
   },
   radarRing: {
-    position: 'absolute', width: 140, height: 140,
-    borderRadius: 70, borderWidth: 1, borderColor: colors.amber + '30',
+    position: 'absolute',
+    width: 160, height: 160, borderRadius: 80,
+    borderWidth: 1, borderColor: colors.accent + '20',
   },
-  radarRing2: { width: 100, height: 100, borderRadius: 50 },
-  radarRing3: { width: 60, height: 60, borderRadius: 30 },
-  radarDot: {
-    width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent,
+  r2: { width: 120, height: 120, borderRadius: 60 },
+  r3: { width: 80, height: 80, borderRadius: 40 },
+  r4: { width: 40, height: 40, borderRadius: 20 },
+  radarCenter: {
+    width: 12, height: 12, borderRadius: 6,
+    backgroundColor: colors.accent,
   },
-  statusRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  statusText: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 13,
-    letterSpacing: 0.5,
+  peerSection: { gap: 10 },
+  sectionTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 16,
+    color: colors.textPrimary,
   },
-  hopText: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12,
-    color: colors.textMuted, marginLeft: 'auto',
-  },
-  divider: {
-    height: 1, backgroundColor: colors.hairline,
+  peerCard: {
+    backgroundColor: colors.bgCard,
+    borderRadius: 14,
+    padding: 12,
   },
   emptyText: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 13,
-    color: colors.textMuted, paddingVertical: spacing.xl,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.textMuted,
+    textAlign: 'center',
+    paddingVertical: 24,
   },
-  infoBox: {
-    backgroundColor: colors.bgCard, borderRadius: radius.md,
-    padding: spacing.lg, gap: spacing.sm,
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
+  },
+  infoCard: {
+    backgroundColor: colors.bgCard,
+    borderRadius: 14,
+    padding: 16,
+    gap: 8,
   },
   infoTitle: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 12,
-    color: colors.textSecondary,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: colors.textPrimary,
   },
   infoBody: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12,
-    color: colors.textMuted, lineHeight: 18,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.textMuted,
+    lineHeight: 20,
   },
 });

@@ -1,85 +1,92 @@
 import React from 'react';
-import { Platform, StyleSheet, View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import SendScreen from '../screens/SendScreen';
 import ReceiveScreen from '../screens/ReceiveScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import BrowserScreen from '../screens/BrowserScreen';
 import MeshStatusScreen from '../screens/MeshStatusScreen';
-import LimitsScreen from '../screens/LimitsScreen';
 import FreezeScreen from '../screens/FreezeScreen';
-import OnboardingScreen from '../screens/OnboardingScreen';
-import { colors, radius } from '../theme';
+import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const SCREEN_OPTIONS: any = {
-  headerShown: false,
-  animation: 'slide_from_bottom' as const,
-  contentStyle: { backgroundColor: colors.bg },
+const TAB_ICONS: Record<string, string> = {
+  Home: '⬡',
+  Send: '↗',
+  Receive: '↙',
+  Settings: '⚙',
+  Browser: '◎',
 };
 
-function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  const icons: Record<string, string> = { Home: '◉', Mesh: '◎', Limits: '⟐' };
+function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   return (
-    <View style={styles.tabItem}>
-      <Text style={[styles.tabIcon, focused && { color: colors.accent }]}>
-        {icons[label] || '○'}
+    <View style={tabStyles.wrap}>
+      <Text style={[tabStyles.icon, focused && { color: colors.accent }]}>
+        {TAB_ICONS[name] || '○'}
       </Text>
-      <Text style={[styles.tabLabel, focused && { color: colors.textPrimary }]}>
-        {label}
+      <Text style={[tabStyles.label, focused && { color: colors.textPrimary }]}>
+        {name}
       </Text>
     </View>
   );
 }
 
-function MainTabs() {
+function HomeTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused }) => <TabIcon label={route.name} focused={focused} />,
-        tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textMuted,
+        tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
+        tabBarStyle: tabStyles.bar,
         tabBarShowLabel: false,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Mesh" component={MeshStatusScreen} />
-      <Tab.Screen name="Limits" component={LimitsScreen} />
+      <Tab.Screen name="Send" component={SendScreen} />
+      <Tab.Screen name="Receive" component={ReceiveScreen} />
+      <Tab.Screen name="Browser" component={BrowserScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
 
+const tabStyles = StyleSheet.create({
+  bar: {
+    backgroundColor: colors.bg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+    height: 68,
+    paddingTop: 8,
+    paddingBottom: 10,
+  },
+  wrap: { alignItems: 'center', gap: 3 },
+  icon: { fontSize: 18, color: colors.textMuted },
+  label: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 10,
+    color: colors.textMuted,
+  },
+});
+
 export default function RootNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
-        <Stack.Screen name="Main" component={MainTabs} />
-        <Stack.Screen name="Send" component={SendScreen} />
-        <Stack.Screen name="Receive" component={ReceiveScreen} />
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          animation: 'slide_from_bottom',
+          contentStyle: { backgroundColor: colors.bg },
+        }}
+      >
+        <Stack.Screen name="Main" component={HomeTabs} />
+        <Stack.Screen name="Mesh" component={MeshStatusScreen} />
         <Stack.Screen name="Freeze" component={FreezeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: colors.bg,
-    borderTopWidth: 0,
-    elevation: 0,
-    height: 64,
-    paddingTop: 8,
-    paddingBottom: 12,
-  },
-  tabItem: { alignItems: 'center', gap: 3 },
-  tabIcon: { fontSize: 16, color: colors.textMuted },
-  tabLabel: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 10,
-    letterSpacing: 0.5, color: colors.textMuted,
-  },
-});

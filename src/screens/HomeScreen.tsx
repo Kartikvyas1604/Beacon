@@ -5,7 +5,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useWalletStore } from '../state/walletStore';
 import { colors, spacing, radius, shadow } from '../theme';
-import { SignalStatusBar, LedgerRow, FuelGauge, Panel, MeshBanner } from '../components';
+import { SignalStatusBar, LedgerRow, FuelGauge, MeshBanner } from '../components';
 
 export default function HomeScreen() {
   const nav = useNavigation<any>();
@@ -23,22 +23,27 @@ export default function HomeScreen() {
   return (
     <View style={styles.screen}>
       <ScrollView
-        style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.topRow}>
-          <SignalStatusBar onPress={() => nav.navigate('Mesh')} />
-          <Pressable
-            style={[styles.freezeBtn, frozen && styles.freezeBtnActive]}
-            onPress={() => nav.navigate('Freeze')}
-            accessibilityRole="button"
-            accessibilityLabel="Emergency freeze"
-          >
-            <Text style={[styles.freezeTxt, frozen && { color: colors.red }]}>
-              {frozen ? 'FROZEN' : 'FREEZE'}
-            </Text>
-          </Pressable>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>Beacon Wallet</Text>
+            <Text style={styles.subtitle}>Stellar Mesh Network</Text>
+          </View>
+          <View style={styles.headerRight}>
+            <Pressable
+              style={styles.statusPill}
+              onPress={() => nav.navigate('Mesh')}
+            >
+              <SignalStatusBar connectivity={connectivity} />
+            </Pressable>
+            {frozen && (
+              <View style={styles.frozenPill}>
+                <Text style={styles.frozenText}>FROZEN</Text>
+              </View>
+            )}
+          </View>
         </View>
 
         {connectivity === 'mesh' && (
@@ -47,176 +52,191 @@ export default function HomeScreen() {
           </Pressable>
         )}
 
-        <View style={styles.balanceCard}>
-          <Text style={styles.balLabel}>Spendable Balance</Text>
-          <Text style={styles.balAmount}>
-            {spendable.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+        <View style={[styles.balanceCard, shadow.card]}>
+          <Text style={styles.balanceLabel}>Total Balance</Text>
+          <Text style={styles.balanceAmount}>
+            {balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
-          <View style={styles.balMeta}>
-            <View style={styles.balMetaItem}>
-              <Text style={styles.balMetaLabel}>Total</Text>
-              <Text style={styles.balMetaValue}>
-                {balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          <View style={styles.balanceBreakdown}>
+            <View style={styles.breakdownItem}>
+              <Text style={styles.breakdownLabel}>Spendable</Text>
+              <Text style={styles.breakdownValue}>
+                {spendable.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </Text>
             </View>
-            <View style={styles.balDivider} />
-            <View style={styles.balMetaItem}>
-              <Text style={styles.balMetaLabel}>Savings</Text>
-              <Text style={[styles.balMetaValue, { color: colors.blue }]}>
+            <View style={styles.breakdownDivider} />
+            <View style={styles.breakdownItem}>
+              <Text style={styles.breakdownLabel}>Savings</Text>
+              <Text style={[styles.breakdownValue, { color: colors.blue }]}>
                 {savings.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </Text>
             </View>
           </View>
         </View>
 
+        <View style={styles.quickActions}>
+          <Pressable
+            style={[styles.quickBtn, { backgroundColor: colors.accent }]}
+            onPress={() => nav.navigate('Send')}
+          >
+            <Text style={styles.quickBtnIcon}>↗</Text>
+            <Text style={styles.quickBtnLabel}>Send</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.quickBtn, styles.quickBtnOutline]}
+            onPress={() => nav.navigate('Receive')}
+          >
+            <Text style={[styles.quickBtnIcon, { color: colors.accent }]}>↙</Text>
+            <Text style={[styles.quickBtnLabel, { color: colors.accent }]}>Receive</Text>
+          </Pressable>
+        </View>
+
         <FuelGauge label="Daily Limit" value={dailyLeft} max={limits.dailyLimit} />
 
-        <Pressable
-          style={styles.savingsCard}
-          onPress={() => nav.navigate('Limits')}
-          accessibilityRole="button"
-        >
-          <View style={styles.savingsLeft}>
-            <Text style={styles.savingsLabel}>Auto-Save</Text>
-            <Text style={styles.savingsPct}>{(limits.autoSaveBps / 100).toFixed(0)}%</Text>
-          </View>
-          <Text style={styles.savingsArrow}>&rarr;</Text>
-        </Pressable>
-
-        <Panel
-          title="Recent Transactions"
-          right={<Text style={styles.txCount}>{txs.length}</Text>}
-        >
-          {txs.slice(0, 6).map((tx, i) => (
-            <React.Fragment key={tx.id}>
-              <LedgerRow transaction={tx} />
-              {i < 5 && <View style={styles.divider} />}
-            </React.Fragment>
-          ))}
-        </Panel>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          {txs.length === 0 ? (
+            <View style={styles.empty}>
+              <Text style={styles.emptyIcon}>◇</Text>
+              <Text style={styles.emptyText}>No transactions yet</Text>
+            </View>
+          ) : (
+            txs.slice(0, 5).map((tx, i) => (
+              <React.Fragment key={tx.id}>
+                <LedgerRow transaction={tx} />
+                {i < Math.min(txs.length, 5) - 1 && <View style={styles.divider} />}
+              </React.Fragment>
+            ))
+          )}
+        </View>
 
         <View style={{ height: 100 }} />
       </ScrollView>
-
-      <View style={styles.actionBar}>
-        <Pressable
-          style={[styles.actionBtn, styles.sendBtn]}
-          onPress={() => nav.navigate('Send')}
-          accessibilityRole="button"
-          accessibilityLabel="Send payment"
-        >
-          <Text style={styles.sendTxt}>Send</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.actionBtn, styles.receiveBtn]}
-          onPress={() => nav.navigate('Receive')}
-          accessibilityRole="button"
-          accessibilityLabel="Receive payment"
-        >
-          <Text style={styles.receiveTxt}>Receive</Text>
-        </Pressable>
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  scroll: { flex: 1 },
-  content: { padding: spacing.xl, paddingTop: 56, gap: spacing.lg },
-  topRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+  content: { padding: 20, paddingTop: 60, gap: 20 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
-  freezeBtn: {
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
+  headerRight: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  greeting: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 24,
+    color: colors.textPrimary,
   },
-  freezeBtnActive: {
+  subtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  statusPill: {},
+  frozenPill: {
     backgroundColor: colors.redDim,
-    borderColor: colors.red + '40',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
-  freezeTxt: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 11,
-    letterSpacing: 0.5, color: colors.textMuted,
+  frozenText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    letterSpacing: 1,
+    color: colors.red,
   },
   balanceCard: {
     backgroundColor: colors.bgCard,
-    borderRadius: radius.lg,
-    padding: spacing.xxl,
-    gap: spacing.sm,
+    borderRadius: 20,
+    padding: 24,
+    gap: 4,
   },
-  balLabel: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 13,
+  balanceLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
     color: colors.textMuted,
   },
-  balAmount: {
-    fontFamily: 'Fraunces_600SemiBold', fontSize: 50,
-    color: colors.textPrimary, letterSpacing: -2,
-    fontVariant: ['tabular-nums'],
-    marginVertical: spacing.xs,
+  balanceAmount: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 42,
+    color: colors.textPrimary,
+    letterSpacing: -1.5,
+    fontVariant: ['tabular-nums'] as any,
+    marginVertical: 4,
   },
-  balMeta: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.lg,
-    marginTop: spacing.xs,
+  balanceBreakdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
   },
-  balMetaItem: { gap: 2 },
-  balMetaLabel: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 11,
+  breakdownItem: { flex: 1, gap: 2 },
+  breakdownLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
     color: colors.textMuted,
   },
-  balMetaValue: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 14,
-    color: colors.textPrimary, fontVariant: ['tabular-nums'],
+  breakdownValue: {
+    fontFamily: 'JetBrainsMono_400Regular',
+    fontSize: 15,
+    color: colors.textPrimary,
+    fontVariant: ['tabular-nums'] as any,
   },
-  balDivider: {
-    width: 1, height: 28, backgroundColor: colors.border,
+  breakdownDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: colors.border,
   },
-  savingsCard: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: colors.bgCard, borderRadius: radius.md,
-    padding: spacing.lg,
+  quickActions: {
+    flexDirection: 'row',
+    gap: 12,
   },
-  savingsLeft: { gap: 2 },
-  savingsLabel: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12,
-    color: colors.textMuted,
+  quickBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
   },
-  savingsPct: {
-    fontFamily: 'Fraunces_600SemiBold', fontSize: 20,
-    color: colors.blue, fontVariant: ['tabular-nums'],
+  quickBtnOutline: {
+    borderWidth: 1.5,
+    borderColor: colors.accent,
+    backgroundColor: 'transparent',
   },
-  savingsArrow: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 18,
-    color: colors.textMuted,
+  quickBtnIcon: { fontSize: 16, color: colors.bg },
+  quickBtnLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    color: colors.bg,
   },
-  txCount: {
-    fontFamily: 'IBMPlexMono_400Regular', fontSize: 11,
-    color: colors.textMuted,
+  section: { gap: 12 },
+  sectionTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 16,
+    color: colors.textPrimary,
   },
   divider: {
-    height: 1, backgroundColor: colors.hairline,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
   },
-  actionBar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    flexDirection: 'row', padding: spacing.xl,
-    paddingBottom: 36, gap: spacing.sm,
-    backgroundColor: colors.bg,
+  empty: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    gap: 8,
   },
-  actionBtn: {
-    flex: 1, paddingVertical: 14,
-    borderRadius: radius.pill, alignItems: 'center',
-  },
-  sendBtn: { backgroundColor: colors.accent },
-  receiveBtn: { borderWidth: 1.5, borderColor: colors.accent },
-  sendTxt: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 14,
-    letterSpacing: 0.5, color: colors.bg,
-  },
-  receiveTxt: {
-    fontFamily: 'IBMPlexMono_500Medium', fontSize: 14,
-    letterSpacing: 0.5, color: colors.accent,
+  emptyIcon: { fontSize: 28, color: colors.textMuted, opacity: 0.4 },
+  emptyText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.textMuted,
   },
 });

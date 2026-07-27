@@ -1,38 +1,15 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
-import { colors, spacing, radius } from '../theme';
+import { colors } from '../theme';
 
-interface Props {
-  hopCount: number;
-  peerCount: number;
-}
-
-export function MeshBanner({ hopCount, peerCount }: Props) {
-  const pulse = useSharedValue(0.6);
-
-  useEffect(() => {
-    pulse.value = withRepeat(
-      withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.ease) }),
-      -1, true
-    );
-  }, [pulse]);
-
-  const anim = useAnimatedStyle(() => ({ opacity: pulse.value }));
-
+export function MeshBanner({ hopCount, peerCount }: { hopCount: number; peerCount: number }) {
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.dot, anim]} />
-      <View style={styles.textGroup}>
-        <Text style={styles.title}>Relaying via mesh</Text>
-        <Text style={styles.sub}>
-          {peerCount} peer{peerCount !== 1 ? 's' : ''} · {hopCount} hop{hopCount !== 1 ? 's' : ''} to connectivity
+    <View style={styles.banner}>
+      <View style={styles.dot} />
+      <View style={styles.info}>
+        <Text style={styles.title}>Mesh Active</Text>
+        <Text style={styles.desc}>
+          {peerCount} device{peerCount !== 1 ? 's' : ''} nearby · {hopCount} hop{hopCount !== 1 ? 's' : ''} relay
         </Text>
       </View>
     </View>
@@ -40,30 +17,16 @@ export function MeshBanner({ hopCount, peerCount }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  banner: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
     backgroundColor: colors.amberDim,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    gap: spacing.md,
+    borderRadius: 12,
+    padding: 12,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.amber,
-  },
-  textGroup: { flex: 1 },
-  title: {
-    fontFamily: 'IBMPlexMono_500Medium',
-    fontSize: 13,
-    color: colors.amber,
-  },
-  sub: {
-    fontFamily: 'IBMPlexMono_400Regular',
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 1,
-  },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.amber },
+  info: { flex: 1, gap: 2 },
+  title: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: colors.amber },
+  desc: { fontFamily: 'Inter_400Regular', fontSize: 12, color: colors.textSecondary },
 });

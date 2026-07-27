@@ -1,94 +1,84 @@
 import { StyleSheet } from 'react-native';
-import { colors } from './theme';
 
 export const typography = StyleSheet.create({
-  balanceHero: {
-    fontFamily: 'Fraunces_600SemiBold',
-    fontSize: 54,
-    color: colors.textPrimary,
-    letterSpacing: -2,
-    fontVariant: ['tabular-nums'],
-  },
-  balanceLarge: {
-    fontFamily: 'Fraunces_600SemiBold',
-    fontSize: 36,
-    color: colors.textPrimary,
-    letterSpacing: -1,
-    fontVariant: ['tabular-nums'],
-  },
-  balanceMedium: {
-    fontFamily: 'Fraunces_600SemiBold',
+  h1: {
+    fontFamily: 'Inter_700Bold',
     fontSize: 28,
-    color: colors.textPrimary,
-    fontVariant: ['tabular-nums'],
-  },
-  balanceSmall: {
-    fontFamily: 'Fraunces_600SemiBold',
-    fontSize: 20,
-    color: colors.textPrimary,
-    fontVariant: ['tabular-nums'],
-  },
-  heading: {
-    fontFamily: 'Fraunces_600SemiBold',
-    fontSize: 22,
-    color: colors.textPrimary,
+    color: '#EEEEEE',
     letterSpacing: -0.5,
   },
-  subheading: {
-    fontFamily: 'IBMPlexMono_500Medium',
-    fontSize: 13,
-    color: colors.textSecondary,
+  h2: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 22,
+    color: '#EEEEEE',
+    letterSpacing: -0.3,
+  },
+  h3: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 18,
+    color: '#EEEEEE',
   },
   body: {
-    fontFamily: 'IBMPlexMono_400Regular',
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
+    color: '#EEEEEE',
+    lineHeight: 22,
+  },
+  bodyMuted: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
+    color: '#9CA3AF',
+    lineHeight: 22,
+  },
+  caption: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#9CA3AF',
   },
   label: {
-    fontFamily: 'IBMPlexMono_500Medium',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
-    letterSpacing: 1.2,
+    letterSpacing: 1,
     textTransform: 'uppercase' as const,
-    color: colors.textMuted,
+    color: '#6B7280',
   },
   mono: {
-    fontFamily: 'IBMPlexMono_400Regular',
+    fontFamily: 'JetBrainsMono_400Regular',
     fontSize: 13,
-    color: colors.textSecondary,
+    color: '#EEEEEE',
   },
-  monoBold: {
-    fontFamily: 'IBMPlexMono_500Medium',
-    fontSize: 13,
-    color: colors.textPrimary,
-  },
-  small: {
-    fontFamily: 'IBMPlexMono_400Regular',
+  monoSm: {
+    fontFamily: 'JetBrainsMono_400Regular',
     fontSize: 11,
-    color: colors.textMuted,
+    color: '#9CA3AF',
   },
-  tiny: {
-    fontFamily: 'IBMPlexMono_500Medium',
-    fontSize: 10,
-    letterSpacing: 0.8,
-    color: colors.textMuted,
-  },
-  freezeHeadline: {
-    fontFamily: 'Fraunces_500Medium_Italic',
+  balanceLarge: {
+    fontFamily: 'Inter_700Bold',
     fontSize: 42,
-    color: colors.red,
-    letterSpacing: -1,
+    color: '#EEEEEE',
+    letterSpacing: -1.5,
+    fontVariant: ['tabular-nums'] as any,
   },
-  amount: {
-    fontFamily: 'Fraunces_600SemiBold',
+  balanceMedium: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 24,
+    color: '#EEEEEE',
+    fontVariant: ['tabular-nums'] as any,
+  },
+  balanceSmall: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
-    color: colors.textPrimary,
-    fontVariant: ['tabular-nums'],
-    textAlign: 'right' as const,
+    color: '#EEEEEE',
+    fontVariant: ['tabular-nums'] as any,
   },
-  address: {
-    fontFamily: 'IBMPlexMono_400Regular',
-    fontSize: 13,
-    color: colors.textSecondary,
+  tabLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 10,
+    letterSpacing: 0.3,
+  },
+  buttonText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    letterSpacing: 0.3,
   },
 });
