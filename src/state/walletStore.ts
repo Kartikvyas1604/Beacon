@@ -18,12 +18,17 @@ interface WalletStore {
   recentTransactions: Transaction[];
   frozen: boolean;
   hopCount: number;
+  onboarded: boolean;
 
   setConnectivity: (status: ConnectivityStatus) => void;
   setFrozen: (frozen: boolean) => void;
   updateLimits: (limits: Partial<SpendingLimits>) => void;
   addTransaction: (tx: Transaction) => void;
   markTransactionConfirmed: (id: string) => void;
+  completeOnboarding: () => void;
+  setLimits: (limits: Partial<SpendingLimits>) => void;
+  freezeWallet: () => void;
+  unfreezeWallet: () => void;
 }
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
@@ -37,6 +42,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   recentTransactions: mockWallet.recentTransactions,
   frozen: mockWallet.frozen,
   hopCount: Math.min(...mockWallet.meshPeers.map((p) => p.hops)),
+  onboarded: false,
 
   setConnectivity: (status) =>
     set({
@@ -65,4 +71,15 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
         tx.id === id ? { ...tx, status: 'confirmed' as const } : tx
       ),
     })),
+
+  completeOnboarding: () => set({ onboarded: true }),
+
+  setLimits: (partial) =>
+    set((state) => ({
+      limits: { ...state.limits, ...partial },
+    })),
+
+  freezeWallet: () => set({ frozen: true }),
+
+  unfreezeWallet: () => set({ frozen: false }),
 }));

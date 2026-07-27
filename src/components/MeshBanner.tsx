@@ -15,31 +15,25 @@ interface Props {
 }
 
 export function MeshBanner({ hopCount, peerCount }: Props) {
-  const pulseOpacity = useSharedValue(0.6);
+  const pulse = useSharedValue(0.6);
 
   useEffect(() => {
-    pulseOpacity.value = withRepeat(
+    pulse.value = withRepeat(
       withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true
+      -1, true
     );
-  }, [pulseOpacity]);
+  }, [pulse]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: pulseOpacity.value,
-  }));
+  const anim = useAnimatedStyle(() => ({ opacity: pulse.value }));
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.indicator, animatedStyle]} />
+      <Animated.View style={[styles.dot, anim]} />
       <View style={styles.textGroup}>
-        <Text style={styles.title}>MESH ACTIVE</Text>
-        <Text style={styles.subtitle}>
-          {peerCount} PEERS · {hopCount} HOP{hopCount !== 1 ? 'S' : ''} TO CONNECTIVITY
+        <Text style={styles.title}>Relaying via mesh</Text>
+        <Text style={styles.sub}>
+          {peerCount} peer{peerCount !== 1 ? 's' : ''} · {hopCount} hop{hopCount !== 1 ? 's' : ''} to connectivity
         </Text>
-      </View>
-      <View style={styles.chevron}>
-        <Text style={styles.chevronText}>→</Text>
       </View>
     </View>
   );
@@ -49,40 +43,27 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.mesh + '12',
-    borderWidth: 1,
-    borderColor: colors.mesh + '30',
-    borderRadius: radius.lg,
+    backgroundColor: colors.amberDim,
+    borderRadius: radius.md,
     padding: spacing.md,
     gap: spacing.md,
   },
-  indicator: {
+  dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.mesh,
+    backgroundColor: colors.amber,
   },
-  textGroup: {
-    flex: 1,
-  },
+  textGroup: { flex: 1 },
   title: {
     fontFamily: 'IBMPlexMono_500Medium',
+    fontSize: 13,
+    color: colors.amber,
+  },
+  sub: {
+    fontFamily: 'IBMPlexMono_400Regular',
     fontSize: 11,
-    letterSpacing: 1.5,
-    color: colors.mesh,
-  },
-  subtitle: {
-    fontFamily: 'IBMPlexMono_400Regular',
-    fontSize: 10,
-    color: colors.textFaint,
-    marginTop: 2,
-  },
-  chevron: {
-    padding: spacing.xs,
-  },
-  chevronText: {
-    fontFamily: 'IBMPlexMono_400Regular',
-    fontSize: 14,
-    color: colors.mesh,
+    color: colors.textMuted,
+    marginTop: 1,
   },
 });

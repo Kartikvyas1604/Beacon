@@ -1,19 +1,19 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, spacing } from '../theme';
+import { colors, spacing, radius } from '../theme';
 
 interface Props {
   title: string;
   children: React.ReactNode;
-  rightElement?: React.ReactNode;
+  right?: React.ReactNode;
 }
 
-export function Panel({ title, children, rightElement }: Props) {
+export function Panel({ title, children, right }: Props) {
   return (
     <View style={styles.panel}>
       <View style={styles.header}>
         <Text style={styles.title}>{title}</Text>
-        {rightElement}
+        {right}
       </View>
       {children}
     </View>
@@ -22,10 +22,8 @@ export function Panel({ title, children, rightElement }: Props) {
 
 const styles = StyleSheet.create({
   panel: {
-    backgroundColor: colors.bgPanel,
-    borderWidth: 1,
-    borderColor: colors.hairline,
-    borderRadius: 8,
+    backgroundColor: colors.bgCard,
+    borderRadius: radius.md,
     padding: spacing.lg,
   },
   header: {
@@ -36,9 +34,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'IBMPlexMono_500Medium',
-    fontSize: 10,
-    letterSpacing: 1.5,
+    fontSize: 11,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-    color: colors.textFaint,
+    color: colors.textMuted,
   },
 });

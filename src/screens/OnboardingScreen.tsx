@@ -1,265 +1,251 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Pressable,
-  ScrollView,
+  View, Text, StyleSheet, Pressable, TextInput,
+  KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withDelay,
-  interpolate,
-  Easing,
-  runOnJS,
+  useSharedValue, useAnimatedStyle,
+  withTiming, withDelay, Easing, interpolate,
 } from 'react-native-reanimated';
-import { Svg, Circle, Path, Line, Rect } from 'react-native-svg';
-import { colors, spacing, radius } from '../theme';
-import { mockOnboardingSlides } from '../mocks/mockChain';
+import * as Haptics from 'expo-haptics';
+import { useWalletStore } from '../state/walletStore';
+import { colors, spacing, radius, shadow } from '../theme';
+import { Panel, BackgroundTexture } from '../components';
 
-const { width: SCREEN_W } = Dimensions.get('window');
-
-function SignalIcon() {
-  return (
-    <Svg width={64} height={64} viewBox="0 0 64 64">
-      <Path
-        d="M32 48 C32 48 16 36 16 24 C16 12 26 4 32 4 C38 4 48 12 48 24 C48 36 32 48 32 48Z"
-        stroke={colors.signal}
-        strokeWidth={1.5}
-        fill="none"
-      />
-      <Circle cx={32} cy={24} r={3} fill={colors.signal} opacity={0.6} />
-      <Line x1={20} y1={32} x2={44} y2={32} stroke={colors.signal} strokeWidth={0.5} opacity={0.3} />
-      <Line x1={22} y1={26} x2={42} y2={26} stroke={colors.signal} strokeWidth={0.5} opacity={0.2} />
-    </Svg>
-  );
+function AnimatedEntry({ index, children }: { index: number; children: React.ReactNode }) {
+  const o = useSharedValue(0);
+  const y = useSharedValue(16);
+  useEffect(() => {
+    o.value = withDelay(index * 60, withTiming(1, { duration: 400, easing: Easing.out(Easing.ease) }));
+    y.value = withDelay(index * 60, withTiming(0, { duration: 400, easing: Easing.out(Easing.ease) }));
+  }, [index, o, y]);
+  return <Animated.View style={{ opacity: o.value, transform: [{ translateY: y.value }] }}>{children}</Animated.View>;
 }
 
-function ShieldIcon() {
+function StepperIndicator({ step, total }: { step: number; total: number }) {
   return (
-    <Svg width={64} height={64} viewBox="0 0 64 64">
-      <Path
-        d="M32 8 L52 18 L52 34 C52 46 32 56 32 56 C32 56 12 46 12 34 L12 18 Z"
-        stroke={colors.signal}
-        strokeWidth={1.5}
-        fill="none"
-      />
-      <Line x1={32} y1={22} x2={32} y2={38} stroke={colors.signal} strokeWidth={1.5} />
-      <Line x1={24} y1={30} x2={40} y2={30} stroke={colors.signal} strokeWidth={1.5} />
-    </Svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <Svg width={64} height={64} viewBox="0 0 64 64">
-      <Rect x={18} y={30} width={28} height={22} rx={3} stroke={colors.signal} strokeWidth={1.5} fill="none" />
-      <Path
-        d="M24 30 V22 C24 14 28 10 32 10 C36 10 40 14 40 22 V30"
-        stroke={colors.signal}
-        strokeWidth={1.5}
-        fill="none"
-      />
-      <Circle cx={32} cy={41} r={3} fill={colors.signal} opacity={0.6} />
-    </Svg>
-  );
-}
-
-const ICONS = {
-  signal: SignalIcon,
-  shield: ShieldIcon,
-  lock: LockIcon,
-};
-
-interface Props {
-  onComplete: () => void;
-}
-
-export default function OnboardingScreen({ onComplete }: Props) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const scrollRef = useRef<ScrollView>(null);
-
-  const handleNext = () => {
-    if (currentSlide < mockOnboardingSlides.length - 1) {
-      const next = currentSlide + 1;
-      setCurrentSlide(next);
-      scrollRef.current?.scrollTo({ x: next * SCREEN_W, animated: true });
-    } else {
-      onComplete();
-    }
-  };
-
-  const handleSkip = () => {
-    onComplete();
-  };
-
-  return (
-    <View style={styles.screen}>
-      <Pressable style={styles.skipBtn} onPress={handleSkip}>
-        <Text style={styles.skipText}>SKIP</Text>
-      </Pressable>
-
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        scrollEnabled={false}
-      >
-        {mockOnboardingSlides.map((slide, i) => {
-          const IconComponent = ICONS[slide.icon];
-          return (
-            <OnboardingSlide
-              key={i}
-              index={i}
-              title={slide.title}
-              subtitle={slide.subtitle}
-              IconComponent={IconComponent}
-              isActive={i === currentSlide}
-            />
-          );
-        })}
-      </ScrollView>
-
-      <View style={styles.bottom}>
-        <View style={styles.dots}>
-          {mockOnboardingSlides.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                i === currentSlide && styles.dotActive,
-              ]}
-            />
-          ))}
-        </View>
-
-        <Pressable style={styles.nextBtn} onPress={handleNext}>
-          <Text style={styles.nextText}>
-            {currentSlide === mockOnboardingSlides.length - 1 ? 'GET STARTED' : 'NEXT'}
-          </Text>
-        </Pressable>
-      </View>
+    <View style={styles.stepper}>
+      {Array.from({ length: total }).map((_, i) => (
+        <View key={i} style={[styles.stepDot, i <= step && styles.stepDotActive]} />
+      ))}
     </View>
   );
 }
 
-function OnboardingSlide({
-  index,
-  title,
-  subtitle,
-  IconComponent,
-  isActive,
-}: {
-  index: number;
-  title: string;
-  subtitle: string;
-  IconComponent: React.FC;
-  isActive: boolean;
-}) {
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(20);
+const STEPS = ['welcome', 'address', 'limits', 'done'] as const;
 
-  React.useEffect(() => {
-    if (isActive) {
-      opacity.value = withDelay(100, withTiming(1, { duration: 500, easing: Easing.out(Easing.ease) }));
-      translateY.value = withDelay(100, withTiming(0, { duration: 500, easing: Easing.out(Easing.ease) }));
+export default function OnboardingScreen() {
+  const completeOnboarding = useWalletStore(s => s.completeOnboarding);
+  const setLimits = useWalletStore(s => s.setLimits);
+  const [step, setStep] = useState(0);
+  const [name, setName] = useState('');
+  const [dailyLimit, setDailyLimit] = useState('100');
+  const [perTxMax, setPerTxMax] = useState('25');
+  const [autoSave, setAutoSave] = useState('5');
+
+  const canAdvance = step === 0 ? name.length > 0 : step === 1 ? true : true;
+
+  const handleNext = () => {
+    Haptics.selectionAsync();
+    if (step < STEPS.length - 1) {
+      setStep(step + 1);
     } else {
-      opacity.value = 0;
-      translateY.value = 20;
+      setLimits({
+        dailyLimit: parseFloat(dailyLimit) || 100,
+        perTxMax: parseFloat(perTxMax) || 25,
+        autoSaveBps: Math.round((parseFloat(autoSave) || 5) * 100),
+      });
+      completeOnboarding();
     }
-  }, [isActive, opacity, translateY]);
-
-  const style = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }));
+  };
 
   return (
-    <View style={[styles.slide, { width: SCREEN_W }]}>
-      <Animated.View style={[styles.slideContent, style]}>
-        <IconComponent />
-        <Text style={styles.slideTitle}>{title}</Text>
-        <Text style={styles.slideSubtitle}>{subtitle}</Text>
-      </Animated.View>
+    <View style={styles.screen}>
+      <BackgroundTexture />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <StepperIndicator step={step} total={STEPS.length} />
+
+          {step === 0 && (
+            <AnimatedEntry index={0}>
+              <Text style={styles.title}>Welcome to Beacon</Text>
+              <Text style={styles.desc}>
+                A mesh-resilient wallet built for environments where connectivity
+                is unreliable. Your funds, always accessible.
+              </Text>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Your Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={name} onChangeText={setName}
+                  placeholder="e.g. Captain Ria" placeholderTextColor={colors.textFaint}
+                  autoFocus
+                />
+              </View>
+              <Text style={styles.hint}>Used locally only — never transmitted.</Text>
+            </AnimatedEntry>
+          )}
+
+          {step === 1 && (
+            <AnimatedEntry index={0}>
+              <Text style={styles.title}>Key Address</Text>
+              <Text style={styles.desc}>
+                This is your Stellar address. It will be generated on first launch
+                and used for all transactions — on-chain and mesh-relayed.
+              </Text>
+              <Panel title="Your Address">
+                <Text style={styles.mockAddr}>
+                  GCKFBEIYTKPVYM7STKSJ7VJNQJZ3XG5XGF4F2YMXZQ5S2K7Q4H5X7M3A
+                </Text>
+              </Panel>
+              <Text style={styles.hint}>Tap "Next" to continue with this address.</Text>
+            </AnimatedEntry>
+          )}
+
+          {step === 2 && (
+            <AnimatedEntry index={0}>
+              <Text style={styles.title}>Spending Limits</Text>
+              <Text style={styles.desc}>
+                Configure your daily and per-transaction spending limits.
+                These are enforced on-chain via Soroban smart contracts.
+              </Text>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Daily Limit (₤)</Text>
+                <TextInput
+                  style={[styles.input, styles.amountInput]}
+                  value={dailyLimit} onChangeText={setDailyLimit}
+                  keyboardType="decimal-pad" placeholderTextColor={colors.textFaint}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Per-Transaction Max (₤)</Text>
+                <TextInput
+                  style={[styles.input, styles.amountInput]}
+                  value={perTxMax} onChangeText={setPerTxMax}
+                  keyboardType="decimal-pad" placeholderTextColor={colors.textFaint}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Auto-Save (%)</Text>
+                <TextInput
+                  style={[styles.input, styles.amountInput]}
+                  value={autoSave} onChangeText={setAutoSave}
+                  keyboardType="decimal-pad" placeholderTextColor={colors.textFaint}
+                />
+              </View>
+            </AnimatedEntry>
+          )}
+
+          {step === 3 && (
+            <AnimatedEntry index={0}>
+              <Text style={styles.title}>You're Ready</Text>
+              <Text style={styles.desc}>
+                {name}'s wallet is configured. You can send, receive, and relay
+                via mesh — even offline. Limits are enforced on-chain.
+              </Text>
+              <View style={styles.summaryCard}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Daily limit</Text>
+                  <Text style={styles.summaryVal}>₤{parseFloat(dailyLimit) || 100}</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Per-tx cap</Text>
+                  <Text style={styles.summaryVal}>₤{parseFloat(perTxMax) || 25}</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Auto-save</Text>
+                  <Text style={styles.summaryVal}>{parseFloat(autoSave) || 5}%</Text>
+                </View>
+              </View>
+            </AnimatedEntry>
+          )}
+
+          <Pressable
+            style={[styles.nextBtn, !canAdvance && { opacity: 0.4 }]}
+            onPress={handleNext}
+            disabled={!canAdvance}
+            accessibilityRole="button"
+          >
+            <Text style={styles.nextTxt}>{step === STEPS.length - 1 ? 'Launch Wallet' : 'Next'}</Text>
+          </Pressable>
+
+          {step > 0 && step < STEPS.length - 1 && (
+            <Pressable style={styles.backBtn} onPress={() => setStep(step - 1)} accessibilityRole="button">
+              <Text style={styles.backTxt}>Back</Text>
+            </Pressable>
+          )}
+
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  skipBtn: {
-    position: 'absolute',
-    top: 60,
-    right: spacing.xl,
-    zIndex: 10,
-    padding: spacing.sm,
+  content: { padding: spacing.xl, paddingTop: 64, gap: spacing.xxl },
+  stepper: { flexDirection: 'row', gap: 8, justifyContent: 'center' },
+  stepDot: {
+    width: 32, height: 3, borderRadius: 1.5, backgroundColor: colors.border,
   },
-  skipText: {
-    fontFamily: 'IBMPlexMono_500Medium',
-    fontSize: 10,
-    letterSpacing: 1.5,
+  stepDotActive: { backgroundColor: colors.accent },
+  title: {
+    fontFamily: 'Fraunces_600SemiBold', fontSize: 26,
+    color: colors.textPrimary, letterSpacing: -0.5,
+  },
+  desc: {
+    fontFamily: 'IBMPlexMono_400Regular', fontSize: 13,
+    color: colors.textMuted, lineHeight: 20,
+  },
+  field: { gap: spacing.xs },
+  fieldLabel: {
+    fontFamily: 'IBMPlexMono_500Medium', fontSize: 11,
+    letterSpacing: 0.8, textTransform: 'uppercase', color: colors.textMuted,
+  },
+  input: {
+    backgroundColor: colors.bgInput, borderRadius: radius.sm,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.md, fontFamily: 'IBMPlexMono_400Regular',
+    fontSize: 14, color: colors.textPrimary,
+  },
+  amountInput: {
+    fontFamily: 'Fraunces_600SemiBold', fontSize: 24,
+    fontVariant: ['tabular-nums'],
+  },
+  hint: {
+    fontFamily: 'IBMPlexMono_400Regular', fontSize: 11,
     color: colors.textFaint,
   },
-  slide: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  mockAddr: {
+    fontFamily: 'IBMPlexMono_500Medium', fontSize: 13,
+    color: colors.textPrimary, letterSpacing: 0.5, lineHeight: 20,
   },
-  slideContent: {
-    alignItems: 'center',
-    gap: spacing.xl,
-    paddingHorizontal: spacing.xxxl,
+  summaryCard: {
+    backgroundColor: colors.bgCard, borderRadius: radius.md,
+    padding: spacing.lg, gap: spacing.sm,
   },
-  slideTitle: {
-    fontFamily: 'Fraunces_600SemiBold',
-    fontSize: 28,
-    color: colors.textPrimary,
-    textAlign: 'center',
-    letterSpacing: -0.5,
-    lineHeight: 36,
+  summaryRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
-  slideSubtitle: {
-    fontFamily: 'IBMPlexMono_400Regular',
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
+  summaryLabel: {
+    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12, color: colors.textMuted,
   },
-  bottom: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: 60,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dots: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.hairline,
-  },
-  dotActive: {
-    backgroundColor: colors.signal,
-    width: 20,
+  summaryVal: {
+    fontFamily: 'Fraunces_600SemiBold', fontSize: 16,
+    color: colors.textPrimary, fontVariant: ['tabular-nums'],
   },
   nextBtn: {
-    backgroundColor: colors.signal,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
+    backgroundColor: colors.accent, borderRadius: radius.pill,
+    paddingVertical: 14, alignItems: 'center',
   },
-  nextText: {
-    fontFamily: 'IBMPlexMono_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.5,
-    color: colors.bg,
+  nextTxt: {
+    fontFamily: 'IBMPlexMono_500Medium', fontSize: 14,
+    letterSpacing: 0.5, color: colors.bg,
+  },
+  backBtn: { alignItems: 'center', paddingVertical: spacing.sm },
+  backTxt: {
+    fontFamily: 'IBMPlexMono_400Regular', fontSize: 12,
+    color: colors.textMuted, letterSpacing: 0.5,
   },
 });
