@@ -53,7 +53,7 @@ export default function OnboardingScreen() {
           {step === 0 && (
             <View style={styles.stepContent}>
               <Text style={styles.logo}>⬡</Text>
-              <Text style={styles.title}>Welcome to Beacon</Text>
+              <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>Welcome to Beacon</Text>
               <Text style={styles.desc}>
                 A mesh-resilient wallet for environments where connectivity
                 is unreliable. Your funds, always accessible.
@@ -73,7 +73,7 @@ export default function OnboardingScreen() {
 
           {step === 1 && (
             <View style={styles.stepContent}>
-              <Text style={styles.title}>Your Address</Text>
+              <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>Your Address</Text>
               <Text style={styles.desc}>
                 This is your Stellar address for all transactions — on-chain and mesh-relayed.
               </Text>
@@ -88,7 +88,7 @@ export default function OnboardingScreen() {
 
           {step === 2 && (
             <View style={styles.stepContent}>
-              <Text style={styles.title}>Spending Limits</Text>
+              <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>Spending Limits</Text>
               <Text style={styles.desc}>
                 Configure limits enforced on-chain via Soroban smart contracts.
               </Text>
@@ -122,7 +122,7 @@ export default function OnboardingScreen() {
           {step === 3 && (
             <View style={styles.stepContent}>
               <Text style={styles.readyIcon}>✓</Text>
-              <Text style={styles.title}>You're Ready</Text>
+              <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>You're Ready</Text>
               <Text style={styles.desc}>
                 {name}'s wallet is configured. Send, receive, and relay via mesh.
               </Text>
@@ -148,7 +148,7 @@ export default function OnboardingScreen() {
             onPress={handleNext}
             disabled={!canAdvance}
           >
-            <Text style={styles.nextText}>
+            <Text style={styles.nextText} numberOfLines={1} adjustsFontSizeToFit>
               {step === STEPS.length - 1 ? 'Launch Wallet' : 'Continue'}
             </Text>
           </Pressable>
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgElevated,
   },
   stepDotActive: { backgroundColor: colors.accent },
-  stepContent: { gap: 16, alignItems: 'center' },
+  stepContent: { gap: 16, alignItems: 'center', width: '100%' },
   logo: {
     fontSize: 48,
     color: colors.accent,
@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: colors.textPrimary,
     textAlign: 'center',
+    width: '100%',
   },
   desc: {
     fontFamily: 'Inter_400Regular',

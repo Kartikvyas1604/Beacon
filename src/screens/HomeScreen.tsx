@@ -76,15 +76,15 @@ export default function HomeScreen() {
 
         <View style={styles.quickActions}>
           <Pressable style={[styles.quickBtn, { backgroundColor: colors.accent }]} onPress={() => nav.navigate('Send')}>
-            <Text style={styles.quickBtnIcon}>↗</Text>
+            <Text style={styles.quickBtnIcon}>↑</Text>
             <Text style={styles.quickBtnLabel}>Send</Text>
           </Pressable>
           <Pressable style={[styles.quickBtn, styles.quickBtnOutline]} onPress={() => nav.navigate('Receive')}>
-            <Text style={[styles.quickBtnIcon, { color: colors.accent }]}>↙</Text>
+            <Text style={[styles.quickBtnIcon, { color: colors.accent }]}>↓</Text>
             <Text style={[styles.quickBtnLabel, { color: colors.accent }]}>Receive</Text>
           </Pressable>
           <Pressable style={[styles.quickBtn, styles.quickBtnOutline]} onPress={() => nav.navigate('Swap')}>
-            <Text style={[styles.quickBtnIcon, { color: colors.accent }]}>↕</Text>
+            <Text style={[styles.quickBtnIcon, { color: colors.accent }]}>⇄</Text>
             <Text style={[styles.quickBtnLabel, { color: colors.accent }]}>Swap</Text>
           </Pressable>
         </View>
