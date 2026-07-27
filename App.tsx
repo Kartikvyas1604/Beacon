@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
-import React from 'react';
-import { StatusBar, StyleSheet, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StatusBar } from 'react-native';
 import * as Font from 'expo-font';
 import {
   IBMPlexMono_400Regular,
@@ -24,16 +24,20 @@ function AppContent() {
 }
 
 export default function App() {
-  const [fontsLoaded] = Font.useFonts({
-    IBMPlexMono_400Regular,
-    IBMPlexMono_500Medium,
-    IBMPlexMono_600SemiBold,
-    IBMPlexMono_700Bold,
-    Fraunces_400Regular,
-    Fraunces_600SemiBold,
-  });
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
-  if (!fontsLoaded) return null;
+  useEffect(() => {
+    Font.loadAsync({
+      IBMPlexMono_400Regular,
+      IBMPlexMono_500Medium,
+      IBMPlexMono_600SemiBold,
+      IBMPlexMono_700Bold,
+      Fraunces_400Regular,
+      Fraunces_600SemiBold,
+    })
+      .then(() => setFontsLoaded(true))
+      .catch(() => setFontsLoaded(true));
+  }, []);
 
   return (
     <>
