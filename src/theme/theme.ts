@@ -1,30 +1,30 @@
 import { StyleSheet } from 'react-native';
 
 export const colors = {
-  bg: '#08090D',
-  bgCard: '#111318',
-  bgElevated: '#161921',
-  bgInput: '#1A1D26',
-  hairline: '#1F2330',
-  border: '#2A2F3E',
+  bg: '#222831',
+  bgCard: '#393E46',
+  bgElevated: '#3d4350',
+  bgInput: '#3d4350',
+  hairline: '#393E46',
+  border: '#4a5060',
 
-  accent: '#FF9F43',
-  accentDim: 'rgba(255,159,67,0.12)',
-  accentGlow: 'rgba(255,159,67,0.06)',
+  accent: '#FD7014',
+  accentDim: 'rgba(253,112,20,0.12)',
+  accentGlow: 'rgba(253,112,20,0.06)',
 
-  green: '#34D399',
-  greenDim: 'rgba(52,211,153,0.12)',
-  amber: '#FBBF24',
-  amberDim: 'rgba(251,191,36,0.12)',
-  red: '#F87171',
-  redDim: 'rgba(248,113,113,0.12)',
-  blue: '#60A5FA',
-  blueDim: 'rgba(96,165,250,0.12)',
+  green: '#66BB6A',
+  greenDim: 'rgba(102,187,106,0.12)',
+  amber: '#FFB300',
+  amberDim: 'rgba(255,179,0,0.12)',
+  red: '#EF5350',
+  redDim: 'rgba(239,83,80,0.12)',
+  blue: '#5C9CE6',
+  blueDim: 'rgba(92,156,230,0.12)',
 
-  textPrimary: '#F5F5F4',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B7280',
-  textFaint: '#374151',
+  textPrimary: '#EEEEEE',
+  textSecondary: '#b0b0b0',
+  textMuted: '#7a7a7a',
+  textFaint: '#4a4a4a',
 } as const;
 
 export const spacing = {
