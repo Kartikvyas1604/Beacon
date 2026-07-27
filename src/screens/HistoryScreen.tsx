@@ -37,7 +37,7 @@ export default function HistoryScreen() {
   const typeIcon = (t: string) => {
     switch (t) {
       case 'payment': return '↗';
-      case 'swap': return '↕';
+      case 'swap': return '⇄';
       case 'trustline': return '+';
       case 'contract': return '◇';
       case 'settings': return '⚙';

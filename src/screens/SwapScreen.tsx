@@ -54,7 +54,7 @@ export default function SwapScreen() {
               </View>
 
               <Pressable style={styles.swapBtn} onPress={() => { const t = sellAsset; setSellAsset(buyAsset); setBuyAsset(t); }}>
-                <Text style={styles.swapIcon}>↕</Text>
+                <Text style={styles.swapIcon}>⇄</Text>
               </Pressable>
 
               <View style={styles.swapField}>

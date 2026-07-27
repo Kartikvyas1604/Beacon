@@ -24,7 +24,7 @@ const Tab = createBottomTabNavigator();
 const TAB_ICONS: Record<string, string> = {
   Home: '⬡',
   Assets: '◧',
-  Swap: '⇌',
+  Swap: '⇄',
   Browser: '◎',
   Settings: '≡',
 };
