@@ -8,7 +8,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { Svg, Circle, Line, G } from 'react-native-svg';
+import { Svg, Circle, Line } from 'react-native-svg';
 import { colors, spacing } from '../theme';
 
 interface Props {
