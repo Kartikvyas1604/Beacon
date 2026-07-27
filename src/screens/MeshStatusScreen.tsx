@@ -1,37 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import Animated, {
-  useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, interpolate,
-} from 'react-native-reanimated';
 import { useWalletStore } from '../state/walletStore';
 import { colors, spacing, radius } from '../theme';
-import { RadarPeerView, Panel, BackgroundTexture } from '../components';
+import { RadarPeerView, Panel } from '../components';
 
 export default function MeshStatusScreen() {
   const connectivity = useWalletStore(s => s.connectivity);
   const peers = useWalletStore(s => s.meshPeers);
   const hops = useWalletStore(s => s.hopCount);
-
-  const rotation = useSharedValue(0);
-  const pulse = useSharedValue(0.6);
-
-  useEffect(() => {
-    rotation.value = withRepeat(
-      withTiming(360, { duration: 8000, easing: Easing.linear }), -1,
-    );
-    pulse.value = withRepeat(
-      withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) }, () => {
-        pulse.value = withRepeat(
-          withTiming(0.6, { duration: 1200, easing: Easing.inOut(Easing.ease) }), -1,
-        );
-      }), -1,
-    );
-  }, [rotation, pulse]);
-
-  const radarStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
-    opacity: interpolate(pulse.value, [0.6, 1], [0.4, 0.9]),
-  }));
 
   const statusColor = connectivity === 'mesh' ? colors.amber
     : connectivity === 'online' ? colors.green : colors.red;
@@ -41,14 +17,13 @@ export default function MeshStatusScreen() {
 
   return (
     <View style={styles.screen}>
-      <BackgroundTexture />
       <View style={styles.content}>
         <Text style={styles.title}>Mesh Status</Text>
 
         <View style={styles.radarWrap}>
-          <Animated.View style={[styles.radarRing, radarStyle]} />
-          <Animated.View style={[styles.radarRing, styles.radarRing2, radarStyle]} />
-          <Animated.View style={[styles.radarRing, styles.radarRing3, radarStyle]} />
+          <View style={styles.radarRing} />
+          <View style={[styles.radarRing, styles.radarRing2]} />
+          <View style={[styles.radarRing, styles.radarRing3]} />
           <View style={styles.radarDot} />
         </View>
 
@@ -104,15 +79,11 @@ const styles = StyleSheet.create({
   radarRing: {
     position: 'absolute', width: 140, height: 140,
     borderRadius: 70, borderWidth: 1, borderColor: colors.amber + '30',
-    borderStyle: 'dashed',
   },
   radarRing2: { width: 100, height: 100, borderRadius: 50 },
   radarRing3: { width: 60, height: 60, borderRadius: 30 },
   radarDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent,
-    ...Platform.select({
-      web: { boxShadow: `0 0 12px ${colors.accent}` },
-    }),
+    width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent,
   },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
@@ -144,4 +115,3 @@ const styles = StyleSheet.create({
     color: colors.textMuted, lineHeight: 18,
   },
 });
-

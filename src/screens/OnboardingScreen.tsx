@@ -1,26 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, Pressable, TextInput,
   KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
-import Animated, {
-  useSharedValue, useAnimatedStyle,
-  withTiming, withDelay, Easing, interpolate,
-} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useWalletStore } from '../state/walletStore';
-import { colors, spacing, radius, shadow } from '../theme';
-import { Panel, BackgroundTexture } from '../components';
-
-function AnimatedEntry({ index, children }: { index: number; children: React.ReactNode }) {
-  const o = useSharedValue(0);
-  const y = useSharedValue(16);
-  useEffect(() => {
-    o.value = withDelay(index * 60, withTiming(1, { duration: 400, easing: Easing.out(Easing.ease) }));
-    y.value = withDelay(index * 60, withTiming(0, { duration: 400, easing: Easing.out(Easing.ease) }));
-  }, [index, o, y]);
-  return <Animated.View style={{ opacity: o.value, transform: [{ translateY: y.value }] }}>{children}</Animated.View>;
-}
+import { colors, spacing, radius } from '../theme';
+import { Panel } from '../components';
 
 function StepperIndicator({ step, total }: { step: number; total: number }) {
   return (
@@ -43,7 +29,7 @@ export default function OnboardingScreen() {
   const [perTxMax, setPerTxMax] = useState('25');
   const [autoSave, setAutoSave] = useState('5');
 
-  const canAdvance = step === 0 ? name.length > 0 : step === 1 ? true : true;
+  const canAdvance = step === 0 ? name.length > 0 : true;
 
   const handleNext = () => {
     Haptics.selectionAsync();
@@ -61,13 +47,12 @@ export default function OnboardingScreen() {
 
   return (
     <View style={styles.screen}>
-      <BackgroundTexture />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <StepperIndicator step={step} total={STEPS.length} />
 
           {step === 0 && (
-            <AnimatedEntry index={0}>
+            <View style={styles.stepContent}>
               <Text style={styles.title}>Welcome to Beacon</Text>
               <Text style={styles.desc}>
                 A mesh-resilient wallet built for environments where connectivity
@@ -83,11 +68,11 @@ export default function OnboardingScreen() {
                 />
               </View>
               <Text style={styles.hint}>Used locally only — never transmitted.</Text>
-            </AnimatedEntry>
+            </View>
           )}
 
           {step === 1 && (
-            <AnimatedEntry index={0}>
+            <View style={styles.stepContent}>
               <Text style={styles.title}>Key Address</Text>
               <Text style={styles.desc}>
                 This is your Stellar address. It will be generated on first launch
@@ -99,18 +84,18 @@ export default function OnboardingScreen() {
                 </Text>
               </Panel>
               <Text style={styles.hint}>Tap "Next" to continue with this address.</Text>
-            </AnimatedEntry>
+            </View>
           )}
 
           {step === 2 && (
-            <AnimatedEntry index={0}>
+            <View style={styles.stepContent}>
               <Text style={styles.title}>Spending Limits</Text>
               <Text style={styles.desc}>
                 Configure your daily and per-transaction spending limits.
                 These are enforced on-chain via Soroban smart contracts.
               </Text>
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>Daily Limit (₤)</Text>
+                <Text style={styles.fieldLabel}>Daily Limit</Text>
                 <TextInput
                   style={[styles.input, styles.amountInput]}
                   value={dailyLimit} onChangeText={setDailyLimit}
@@ -118,7 +103,7 @@ export default function OnboardingScreen() {
                 />
               </View>
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>Per-Transaction Max (₤)</Text>
+                <Text style={styles.fieldLabel}>Per-Transaction Max</Text>
                 <TextInput
                   style={[styles.input, styles.amountInput]}
                   value={perTxMax} onChangeText={setPerTxMax}
@@ -133,11 +118,11 @@ export default function OnboardingScreen() {
                   keyboardType="decimal-pad" placeholderTextColor={colors.textFaint}
                 />
               </View>
-            </AnimatedEntry>
+            </View>
           )}
 
           {step === 3 && (
-            <AnimatedEntry index={0}>
+            <View style={styles.stepContent}>
               <Text style={styles.title}>You're Ready</Text>
               <Text style={styles.desc}>
                 {name}'s wallet is configured. You can send, receive, and relay
@@ -146,18 +131,18 @@ export default function OnboardingScreen() {
               <View style={styles.summaryCard}>
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Daily limit</Text>
-                  <Text style={styles.summaryVal}>₤{parseFloat(dailyLimit) || 100}</Text>
+                  <Text style={styles.summaryVal}>{parseFloat(dailyLimit) || 100}</Text>
                 </View>
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Per-tx cap</Text>
-                  <Text style={styles.summaryVal}>₤{parseFloat(perTxMax) || 25}</Text>
+                  <Text style={styles.summaryVal}>{parseFloat(perTxMax) || 25}</Text>
                 </View>
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Auto-save</Text>
                   <Text style={styles.summaryVal}>{parseFloat(autoSave) || 5}%</Text>
                 </View>
               </View>
-            </AnimatedEntry>
+            </View>
           )}
 
           <Pressable
@@ -185,6 +170,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.xl, paddingTop: 64, gap: spacing.xxl },
+  stepContent: { gap: spacing.lg },
   stepper: { flexDirection: 'row', gap: 8, justifyContent: 'center' },
   stepDot: {
     width: 32, height: 3, borderRadius: 1.5, backgroundColor: colors.border,

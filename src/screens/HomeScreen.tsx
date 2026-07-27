@@ -1,27 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable,
 } from 'react-native';
-import Animated, {
-  useSharedValue, useAnimatedStyle, withDelay, withTiming, Easing,
-} from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { useWalletStore } from '../state/walletStore';
 import { colors, spacing, radius, shadow } from '../theme';
-import { SignalStatusBar, LedgerRow, FuelGauge, Panel, BackgroundTexture, MeshBanner } from '../components';
-
-const STAGGER = 40;
-
-function FadeIn({ index, children }: { index: number; children: React.ReactNode }) {
-  const o = useSharedValue(0);
-  const y = useSharedValue(12);
-  useEffect(() => {
-    o.value = withDelay(index * STAGGER, withTiming(1, { duration: 450, easing: Easing.out(Easing.ease) }));
-    y.value = withDelay(index * STAGGER, withTiming(0, { duration: 450, easing: Easing.out(Easing.ease) }));
-  }, [index, o, y]);
-  const s = useAnimatedStyle(() => ({ opacity: o.value, transform: [{ translateY: y.value }] }));
-  return <Animated.View style={s}>{children}</Animated.View>;
-}
+import { SignalStatusBar, LedgerRow, FuelGauge, Panel, MeshBanner } from '../components';
 
 export default function HomeScreen() {
   const nav = useNavigation<any>();
@@ -38,91 +22,78 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.screen}>
-      <BackgroundTexture />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <FadeIn index={0}>
-          <View style={styles.topRow}>
-            <SignalStatusBar onPress={() => nav.navigate('Mesh')} />
-            <Pressable
-              style={[styles.freezeBtn, frozen && styles.freezeBtnActive]}
-              onPress={() => nav.navigate('Freeze')}
-              accessibilityRole="button"
-              accessibilityLabel="Emergency freeze"
-            >
-              <Text style={[styles.freezeTxt, frozen && { color: colors.red }]}>
-                {frozen ? 'FROZEN' : '⊘ FREEZE'}
-              </Text>
-            </Pressable>
-          </View>
-        </FadeIn>
+        <View style={styles.topRow}>
+          <SignalStatusBar onPress={() => nav.navigate('Mesh')} />
+          <Pressable
+            style={[styles.freezeBtn, frozen && styles.freezeBtnActive]}
+            onPress={() => nav.navigate('Freeze')}
+            accessibilityRole="button"
+            accessibilityLabel="Emergency freeze"
+          >
+            <Text style={[styles.freezeTxt, frozen && { color: colors.red }]}>
+              {frozen ? 'FROZEN' : 'FREEZE'}
+            </Text>
+          </Pressable>
+        </View>
 
         {connectivity === 'mesh' && (
-          <FadeIn index={1}>
-            <Pressable onPress={() => nav.navigate('Mesh')}>
-              <MeshBanner hopCount={hops} peerCount={peers.length} />
-            </Pressable>
-          </FadeIn>
+          <Pressable onPress={() => nav.navigate('Mesh')}>
+            <MeshBanner hopCount={hops} peerCount={peers.length} />
+          </Pressable>
         )}
 
-        <FadeIn index={2}>
-          <View style={styles.balanceCard}>
-            <Text style={styles.balLabel}>Spendable Balance</Text>
-            <Text style={styles.balAmount}>
-              ₤{spendable.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-            </Text>
-            <View style={styles.balMeta}>
-              <View style={styles.balMetaItem}>
-                <Text style={styles.balMetaLabel}>Total</Text>
-                <Text style={styles.balMetaValue}>
-                  ₤{balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </Text>
-              </View>
-              <View style={styles.balDivider} />
-              <View style={styles.balMetaItem}>
-                <Text style={styles.balMetaLabel}>Savings</Text>
-                <Text style={[styles.balMetaValue, { color: colors.blue }]}>
-                  ₤{savings.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </Text>
-              </View>
+        <View style={styles.balanceCard}>
+          <Text style={styles.balLabel}>Spendable Balance</Text>
+          <Text style={styles.balAmount}>
+            {spendable.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          </Text>
+          <View style={styles.balMeta}>
+            <View style={styles.balMetaItem}>
+              <Text style={styles.balMetaLabel}>Total</Text>
+              <Text style={styles.balMetaValue}>
+                {balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </Text>
+            </View>
+            <View style={styles.balDivider} />
+            <View style={styles.balMetaItem}>
+              <Text style={styles.balMetaLabel}>Savings</Text>
+              <Text style={[styles.balMetaValue, { color: colors.blue }]}>
+                {savings.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </Text>
             </View>
           </View>
-        </FadeIn>
+        </View>
 
-        <FadeIn index={3}>
-          <FuelGauge label="Daily Limit" value={dailyLeft} max={limits.dailyLimit} />
-        </FadeIn>
+        <FuelGauge label="Daily Limit" value={dailyLeft} max={limits.dailyLimit} />
 
-        <FadeIn index={4}>
-          <Pressable
-            style={styles.savingsCard}
-            onPress={() => nav.navigate('Limits')}
-            accessibilityRole="button"
-          >
-            <View style={styles.savingsLeft}>
-              <Text style={styles.savingsLabel}>Auto-Save</Text>
-              <Text style={styles.savingsPct}>{(limits.autoSaveBps / 100).toFixed(0)}%</Text>
-            </View>
-            <Text style={styles.savingsArrow}>→</Text>
-          </Pressable>
-        </FadeIn>
+        <Pressable
+          style={styles.savingsCard}
+          onPress={() => nav.navigate('Limits')}
+          accessibilityRole="button"
+        >
+          <View style={styles.savingsLeft}>
+            <Text style={styles.savingsLabel}>Auto-Save</Text>
+            <Text style={styles.savingsPct}>{(limits.autoSaveBps / 100).toFixed(0)}%</Text>
+          </View>
+          <Text style={styles.savingsArrow}>&rarr;</Text>
+        </Pressable>
 
-        <FadeIn index={5}>
-          <Panel
-            title="Recent Transactions"
-            right={<Text style={styles.txCount}>{txs.length}</Text>}
-          >
-            {txs.slice(0, 6).map((tx, i) => (
-              <React.Fragment key={tx.id}>
-                <LedgerRow transaction={tx} />
-                {i < 5 && <View style={styles.divider} />}
-              </React.Fragment>
-            ))}
-          </Panel>
-        </FadeIn>
+        <Panel
+          title="Recent Transactions"
+          right={<Text style={styles.txCount}>{txs.length}</Text>}
+        >
+          {txs.slice(0, 6).map((tx, i) => (
+            <React.Fragment key={tx.id}>
+              <LedgerRow transaction={tx} />
+              {i < 5 && <View style={styles.divider} />}
+            </React.Fragment>
+          ))}
+        </Panel>
 
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -151,7 +122,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  scroll: { flex: 1, zIndex: 1 },
+  scroll: { flex: 1 },
   content: { padding: spacing.xl, paddingTop: 56, gap: spacing.lg },
   topRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -176,7 +147,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.xxl,
     gap: spacing.sm,
-    ...shadow.card,
   },
   balLabel: {
     fontFamily: 'IBMPlexMono_400Regular', fontSize: 13,
@@ -233,8 +203,7 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     flexDirection: 'row', padding: spacing.xl,
     paddingBottom: 36, gap: spacing.sm,
-    zIndex: 2,
-    backgroundColor: colors.bg + 'E6',
+    backgroundColor: colors.bg,
   },
   actionBtn: {
     flex: 1, paddingVertical: 14,
