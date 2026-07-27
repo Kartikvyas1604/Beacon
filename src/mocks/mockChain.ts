@@ -137,6 +137,7 @@ export const mockWallet: WalletState = {
       route: 'online',
     },
   ],
+  frozen: false,
 };
 
 export const mockOnboardingSlides = [

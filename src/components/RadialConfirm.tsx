@@ -1,16 +1,9 @@
-import React, { useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, GestureResponderEvent } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-  interpolate,
-  runOnJS,
-} from 'react-native-reanimated';
+import React, { useCallback } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useSharedValue, withTiming, Easing, interpolate, runOnJS } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Svg, Circle } from 'react-native-svg';
-import { colors, spacing, radius } from '../theme';
+import { colors } from '../theme';
 
 interface Props {
   size?: number;
@@ -19,10 +12,9 @@ interface Props {
   onConfirm: () => void;
 }
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
 export function RadialConfirm({ size = 80, duration = 900, label, onConfirm }: Props) {
   const progress = useSharedValue(0);
+  const [progressVal, setProgressVal] = React.useState(0);
   const [completed, setCompleted] = React.useState(false);
 
   const r = (size - 8) / 2;
@@ -44,22 +36,26 @@ export function RadialConfirm({ size = 80, duration = 900, label, onConfirm }: P
         runOnJS(triggerConfirm)();
       }
     });
+
+    const start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const p = Math.min(elapsed / duration, 1);
+      setProgressVal(p);
+      if (p < 1) {
+        requestAnimationFrame(tick);
+      }
+    };
+    requestAnimationFrame(tick);
   }, [duration, progress, triggerConfirm]);
 
   const handlePressOut = useCallback(() => {
     progress.value = withTiming(0, { duration: 200 });
+    setProgressVal(0);
   }, [progress]);
 
-  const animatedStroke = useAnimatedStyle(() => ({
-    strokeDashoffset: interpolate(progress.value, [0, 1], [circumference, 0]),
-  }));
-
-  const glowStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(progress.value, [0, 0.5, 1], [0, 0.3, 0.8]),
-  }));
-
   return (
-    <Animated.View
+    <View
       style={[styles.container, { width: size, height: size }]}
       onTouchStart={handlePressIn}
       onTouchEnd={handlePressOut}
@@ -74,7 +70,7 @@ export function RadialConfirm({ size = 80, duration = 900, label, onConfirm }: P
           strokeWidth={2}
           fill="none"
         />
-        <AnimatedCircle
+        <Circle
           cx={size / 2}
           cy={size / 2}
           r={r}
@@ -82,18 +78,23 @@ export function RadialConfirm({ size = 80, duration = 900, label, onConfirm }: P
           strokeWidth={2}
           fill="none"
           strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - progressVal)}
           strokeLinecap="round"
-          animatedProps={animatedStroke}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
-      <Animated.View style={[styles.glow, { width: size, height: size }, glowStyle]} />
+      <View
+        style={[
+          styles.glow,
+          { width: size, height: size, opacity: progressVal * 0.8 },
+        ]}
+      />
       <View style={styles.labelContainer}>
         <Text style={[styles.label, completed && { color: colors.online }]}>
           {completed ? '✓' : label}
         </Text>
       </View>
-    </Animated.View>
+    </View>
   );
 }
 

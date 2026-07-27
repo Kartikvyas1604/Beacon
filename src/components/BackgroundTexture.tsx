@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Svg, Defs, RadialGradient, Stop, Pattern, Circle } from 'react-native-svg';
+import { Svg, Defs, RadialGradient, Stop, Pattern, Circle, Rect } from 'react-native-svg';
 import { colors } from '../theme';
 
 export function BackgroundTexture() {
@@ -16,8 +16,8 @@ export function BackgroundTexture() {
             <Circle cx="1" cy="1" r="1" fill={colors.textFaint} opacity={0.03} />
           </Pattern>
         </Defs>
-        <Rect width="100%" height="100%" fill="url(#bgGrad)" />
-        <Rect width="100%" height="100%" fill="url(#dotGrid)" />
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#bgGrad)" />
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#dotGrid)" />
       </Svg>
     </View>
   );
@@ -25,7 +25,11 @@ export function BackgroundTexture() {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 0,
   },
 });

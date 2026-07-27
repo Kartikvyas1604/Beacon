@@ -108,6 +108,12 @@ export default function RootNavigator() {
           border: colors.hairline,
           notification: colors.signal,
         },
+        fonts: {
+          regular: { fontFamily: 'IBMPlexMono_400Regular', fontWeight: '400' },
+          medium: { fontFamily: 'IBMPlexMono_500Medium', fontWeight: '500' },
+          bold: { fontFamily: 'IBMPlexMono_500Medium', fontWeight: '700' },
+          heavy: { fontFamily: 'IBMPlexMono_500Medium', fontWeight: '900' },
+        },
       }}
     >
       <Stack.Navigator
