@@ -8,7 +8,8 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "backgroundColor": "#0B0E12"
+      "backgroundColor": "#0B0E12",
+      "bundleIdentifier": "com.anonymous.beacon"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +18,8 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.beacon"
     },
     "web": {
       "favicon": "./assets/favicon.png"
